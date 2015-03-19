@@ -1,0 +1,1 @@
+{"reviewRef": "refs/heads/create-review-diffs", "targetRef": "refs/heads/master", "description": "One-way mirroring of code review requests from git to Phabricator", "reviewers": "amshali"}
