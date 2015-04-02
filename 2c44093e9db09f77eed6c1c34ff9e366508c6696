@@ -1,1 +1,3 @@
 {"reviewRef":"refs/heads/ojarjur/auto-close-reviews","targetRef":"refs/heads/master","description":"Added logic for auto-closing reviews that have been merged into their target ref"}
+
+{"reviewRef":"refs/heads/ojarjur/auto-close-reviews","targetRef":"refs/heads/master","description":"Added logic for auto-closing reviews that have been merged into their target ref"}
