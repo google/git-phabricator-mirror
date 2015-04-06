@@ -1,0 +1,1 @@
+{"reviewRef":"refs/heads/ojarjur/auto-close-reviews","targetRef":"refs/heads/master","description":"Small cleanups of how the mirror calls into the git command line tool:\n\n1. Disable color in the diff output.\n2. Remove unnecessary conversions to a string of a value that was already a string.\n3. Don't trim leading/trailing spaces, as that can sometimes corrupt diff output."}
