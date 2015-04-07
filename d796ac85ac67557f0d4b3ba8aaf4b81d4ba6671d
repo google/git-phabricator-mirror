@@ -1,0 +1,1 @@
+{"reviewRef":"refs/heads/ojarjur/limit-title-length","targetRef":"refs/heads/master","description":"Limit review titles to 40 characters, and put the rest of the description in the \"summary\" field of the review if it is too long for a title"}
