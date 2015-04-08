@@ -1,6 +1,1 @@
-{"reviewRef": "refs/heads/ojarjur/set-reviewers", "targetRef": "refs/heads/master", "requester": "ojarjur@google.com", "reviewers": ["amshali@google.com"], "Description": "Add support for Phabricator users to the mirror.
-
-This specifically changes three things:
-1. Reviewers are added to differetial revisisions at creation.
-2. The requester of the review is added to the differential revision in the CC list.
-3. The mirror tool will commandeer a revision before trying to close it, so that we can still close revisions even if the requester commandeers them during the review."}
+{"reviewRef": "refs/heads/ojarjur/set-reviewers", "targetRef": "refs/heads/master", "requester": "ojarjur@google.com", "reviewers": ["amshali@google.com"], "Description": "Add support for Phabricator users to the mirror."}
