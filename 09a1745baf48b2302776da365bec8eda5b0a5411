@@ -9,3 +9,5 @@
 {"timestamp":"1427149353","author":"ojarjur@google.com","location":{"commit":"0af065bcb80ba9838dcb98982a50e43e8c804a26","path":"Makefile","range":{"startLine":11}},"description":"Done."}
 
 {"timestamp":"1427149474","author":"ojarjur@google.com","description":"Didn't mean to close it; that was Phabricator's doing."}
+
+{"timestamp":"1427149539","author":"amshali@google.com","resolved":true}
