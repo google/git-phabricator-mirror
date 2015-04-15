@@ -1,3 +1,5 @@
 {"timestamp":"1428429612","author":"amshali@google.com","location":{"commit":"90e6d4b0b26416979c7f979ca4c76ce8929215c2","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":199}},"description":"Can you add a comment to this? What are we updating here? How the state of things changes?"}
 
 {"timestamp":"1428449293","author":"ojarjur@google.com","description":"In addition to commenting what the methods were doing, I also refactored the code a bit to make the logic clearer.\\n\\nPTAL."}
+
+{"timestamp":"1428449864","author":"amshali@google.com","resolved":true}
