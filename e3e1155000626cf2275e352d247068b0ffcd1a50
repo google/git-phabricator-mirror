@@ -23,3 +23,5 @@
 {"timestamp":"1426807684","author":"ojarjur@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/main.go","range":{"startLine":27}},"description":"Done."}
 
 {"timestamp":"1426807684","author":"ojarjur@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/mirror/mirror.go","range":{"startLine":39}},"description":"This is actually the recommended naming pattern in Go. The client has to refer to the method using \u003cpackageName\u003e.\u003cmethodName\u003e, so they wind up saying \"mirror.Repo\".\\n\\nIf it was actually named \"MirrorRepo\", then the golint tool would complain saying that mirror.MirrorRepo \"stutters\" (that's the actual way it describes it)."}
+
+{"timestamp":"1426810462","author":"amshali@google.com","resolved":true}
