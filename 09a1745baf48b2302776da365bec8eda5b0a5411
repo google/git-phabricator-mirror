@@ -1,1 +1,3 @@
 {"timestamp":"1427145651","author":"amshali@google.com","location":{"commit":"0af065bcb80ba9838dcb98982a50e43e8c804a26","path":"Makefile","range":{"startLine":11}},"description":"I believe dev-tools-bin is a general place where DI people publish their tools?"}
+
+{"timestamp":"1427145775","author":"ojarjur@google.com","location":{"commit":"0af065bcb80ba9838dcb98982a50e43e8c804a26","path":"Makefile","range":{"startLine":11}},"description":"\"dev-tools-bin\" is a bucket that I created which is just for Zeno. I called it \"dev-tools-bin\" instead of \"zeno-bin\" because we don't want to leak the name \"Zeno\" (at least not yet)."}
