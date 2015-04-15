@@ -1,0 +1,1 @@
+{"reviewRef":"refs/heads/ojarjur/read-review-status","targetRef":"refs/heads/master","requester":"ojarjur@google.com","reviewers":["amshali@google.com"],"description":"Initial logic for reading review status and comments.\n\nSince Phabricator does provide an API for this, we have to read this from the database."}
