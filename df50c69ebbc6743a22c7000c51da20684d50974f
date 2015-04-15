@@ -3,3 +3,5 @@
 {"timestamp":"1427478494","author":"amshali@google.com","location":{"commit":"a5219787ddc6952e788be4e215b8f4ed93ef67cd","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":82}},"description":"What's gtcm? A comment or reference would be great."}
 
 {"timestamp":"1427478494","author":"amshali@google.com","location":{"commit":"a5219787ddc6952e788be4e215b8f4ed93ef67cd","path":"src/mirror/repository/git.go","range":{"startLine":53}},"description":"Why not using runGitCommand here?"}
+
+{"timestamp":"1427482413","author":"ojarjur@google.com","location":{"commit":"a5219787ddc6952e788be4e215b8f4ed93ef67cd","path":"src/mirror/review/arcanist/diff.go","range":{"startLine":1}},"description":"There is no reference page; I just had to dig through the Phabricator source code to figure this stuff out.\\n\\nHowever, I will add some comments explaining what the various bits are."}
