@@ -9,3 +9,5 @@
 {"timestamp":"1426806405","author":"amshali@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/main.go","range":{"startLine":49}},"description":"What is this SkipDir and why is it returned here?"}
 
 {"timestamp":"1426806405","author":"amshali@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/main.go","range":{"startLine":27}},"description":"A comment would be useful on how this func finds repos. "}
+
+{"timestamp":"1426807554","author":"ojarjur@google.com","description":"  - Added comments for specific lines as requested in code review (D15)\\n"}
