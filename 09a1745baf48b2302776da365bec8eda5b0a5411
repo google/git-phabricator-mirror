@@ -7,3 +7,5 @@
 {"timestamp":"1427149324","author":"ojarjur@google.com","description":"  - Added a \"publish\" build target to the make file, which copies the binary into a GCS bucket\\n  - Renamed the binary to 'git_notes_mirror'\\n"}
 
 {"timestamp":"1427149353","author":"ojarjur@google.com","location":{"commit":"0af065bcb80ba9838dcb98982a50e43e8c804a26","path":"Makefile","range":{"startLine":11}},"description":"Done."}
+
+{"timestamp":"1427149474","author":"ojarjur@google.com","description":"Didn't mean to close it; that was Phabricator's doing."}
