@@ -19,3 +19,5 @@
 {"timestamp":"1426807684","author":"ojarjur@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/mirror/review/review.go","range":{"startLine":25}},"description":"Done."}
 
 {"timestamp":"1426807684","author":"ojarjur@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/main.go","range":{"startLine":49}},"description":"It's a special value that tells the filepath.Walk method to not go any deeper.\\n\\nI added a comment explaining why we are returning it."}
+
+{"timestamp":"1426807684","author":"ojarjur@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/main.go","range":{"startLine":27}},"description":"Done."}
