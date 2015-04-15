@@ -1,0 +1,1 @@
+{"timestamp":"1428367819","author":"amshali@google.com","location":{"commit":"d796ac85ac67557f0d4b3ba8aaf4b81d4ba6671d","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":133}},"description":"I wish we could split based on word boundary. \\n\\nCan you add a note about where 40 came from?\\n"}
