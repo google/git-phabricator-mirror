@@ -7,3 +7,5 @@
 {"timestamp":"1427482413","author":"ojarjur@google.com","location":{"commit":"a5219787ddc6952e788be4e215b8f4ed93ef67cd","path":"src/mirror/review/arcanist/diff.go","range":{"startLine":1}},"description":"There is no reference page; I just had to dig through the Phabricator source code to figure this stuff out.\\n\\nHowever, I will add some comments explaining what the various bits are."}
 
 {"timestamp":"1427482413","author":"ojarjur@google.com","location":{"commit":"a5219787ddc6952e788be4e215b8f4ed93ef67cd","path":"src/mirror/repository/git.go","range":{"startLine":53}},"description":"Added a comment explaining why we can't reuse runGitCommand."}
+
+{"timestamp":"1427482413","author":"ojarjur@google.com","location":{"commit":"a5219787ddc6952e788be4e215b8f4ed93ef67cd","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":82}},"description":"Made this into a constant, with a comment explaining what it is."}
