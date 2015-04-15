@@ -1,3 +1,5 @@
 {"timestamp":"1426806405","author":"amshali@google.com","description":"Can you add a readme explaining how the whole thing works? \\nBTW, how does the mirror tool marks a commit as sent for review so that it does not do it again? Or is that something that arc handles?"}
 
 {"timestamp":"1426806405","author":"amshali@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/mirror/mirror.go","range":{"startLine":39}},"description":"The name of func might better be MirrorRepo to express what it does. \"Repo\" sounds very general."}
+
+{"timestamp":"1426806405","author":"amshali@google.com","location":{"commit":"e3e1155000626cf2275e352d247068b0ffcd1a50","path":"src/mirror/review/review.go","range":{"startLine":25}},"description":"What is the purpose of this interface? Interface between what?"}
