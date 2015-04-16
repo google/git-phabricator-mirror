@@ -23,3 +23,5 @@
 {"timestamp":"1429143231","author":"ojarjur@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":123}},"description":"Done."}
 
 {"timestamp":"1429143231","author":"ojarjur@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":94}},"description":"Added a comment; but the answer is \"In no case that we care about\"."}
+
+{"timestamp":"1429143231","author":"ojarjur@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":99}},"description":"Thanks for catching that; it was dead code.\\n\\nRemoved."}
