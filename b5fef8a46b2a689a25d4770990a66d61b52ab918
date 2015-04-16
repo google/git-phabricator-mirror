@@ -5,3 +5,5 @@
 {"timestamp":"1429138502","author":"amshali@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/database.go","range":{"startLine":92}},"description":"Definitely needs a comment on the result. What's it look like?"}
 
 {"timestamp":"1429138503","author":"amshali@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/database.go","range":{"startLine":40}},"description":"Can you comment here what transaction means in this context?"}
+
+{"timestamp":"1429138503","author":"amshali@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":94}},"description":"When hashPair can be less than 2? Or more than 2?"}
