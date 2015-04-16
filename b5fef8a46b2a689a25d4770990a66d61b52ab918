@@ -25,3 +25,5 @@
 {"timestamp":"1429143231","author":"ojarjur@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":94}},"description":"Added a comment; but the answer is \"In no case that we care about\"."}
 
 {"timestamp":"1429143231","author":"ojarjur@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":99}},"description":"Thanks for catching that; it was dead code.\\n\\nRemoved."}
+
+{"timestamp":"1429143231","author":"ojarjur@google.com","location":{"commit":"be77099c8ab431bdf888f1c9a4b9e4ffc79fa504","path":"src/mirror/mirror.go","range":{"startLine":37}},"description":"No, \"ok\" is a boolean indicating whether or not the map contained the requested value. This is the idiomatic way of testing for membership in a map and then using the value if it exists (i.e. it's a single check-and-get operation instead of two separate instructions like you would see in some other languages)."}
