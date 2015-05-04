@@ -1,1 +1,3 @@
 {"timestamp":"1430777979","author":"amshali@google.com","location":{"commit":"027efac2422bc33d1216ae58d2e0b5ce61eb3fc6","path":"src/mirror/review/arcanist/database.go","range":{"startLine":81}},"description":"Are we sure it pus a new line at the end of output or could that be part of result?"}
+
+{"timestamp":"1430780255","author":"ojarjur@google.com","location":{"commit":"027efac2422bc33d1216ae58d2e0b5ce61eb3fc6","path":"src/mirror/review/arcanist/database.go","range":{"startLine":81}},"description":"I'm sure; I manually verified that it always includes an additional trailing newline."}
