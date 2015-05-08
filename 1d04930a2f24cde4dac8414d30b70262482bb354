@@ -1,0 +1,4 @@
+{"timestamp":"1430183193","author":"amshali@google.com","location":{"commit":"1d04930a2f24cde4dac8414d30b70262482bb354","path":"src/mirror/repository/git.go","range":{"startLine":144}},"description":"Can you comment on what -U is doing here? I mean what is the role of it here?"}
+{"timestamp":"1430183225","author":"amshali@google.com","description":"LGTM\\nJust address one comment."}
+{"timestamp":"1430183225","author":"amshali@google.com","resolved":true}
+{"timestamp":"1430526299","author":"ojarjur@google.com","location":{"commit":"1d04930a2f24cde4dac8414d30b70262482bb354","path":"src/mirror/repository/git.go","range":{"startLine":144}},"description":"Done."}
