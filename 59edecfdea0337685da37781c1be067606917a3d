@@ -1,3 +1,5 @@
 {"timestamp":"1431455675","author":"bstanley@google.com","resolved":true}
 
 {"timestamp":"1431455675","author":"bstanley@google.com","description":"LGTM."}
+
+{"timestamp":"1431464240","author":"amshali@google.com","location":{"commit":"59edecfdea0337685da37781c1be067606917a3d","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":403}},"description":"Please explain somewhere what callsign means."}
