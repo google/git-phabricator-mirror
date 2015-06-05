@@ -7,3 +7,5 @@
 {"timestamp":"1433525907","author":"ojarjur@google.com","description":"\u003e\u003e! In D176#3093, @amshali wrote:\n\u003e\u003e This makes the sync_git_notes script redundant, and should speed up the mirroring of reviews from remote repos.\n\u003e Are we gonna get rid of sync_git_notes script?\n\nThat was done in a separate change (in a different repo)."}
 
 {"timestamp":"1433525936","author":"ojarjur@google.com","location":{"commit":"9c08ef4d56be5d9dca5718156fc320dcf7c84c62","path":"src/mirror/repository/git.go","range":{"startLine":205}},"description":"Done."}
+
+{"timestamp":"1433525936","author":"ojarjur@google.com","location":{"commit":"9c08ef4d56be5d9dca5718156fc320dcf7c84c62","path":"src/mirror/mirror_test.go","range":{"startLine":114}},"description":"Done."}
