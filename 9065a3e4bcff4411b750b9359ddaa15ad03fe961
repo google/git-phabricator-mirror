@@ -1,0 +1,1 @@
+{"reviewRef":"refs/heads/amshali/fix-quote-issue-leading-to-no-comment","targetRef":"refs/heads/master","requester":"amshali@google.com","reviewers":["amshali","ojarjur"],"description":"This fixes the issue with comments not being propagated due to the fact that git command fails. We need to quote the comment content."}
