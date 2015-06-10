@@ -3,3 +3,5 @@
 {"timestamp":"1433963987","author":"bstanley@google.com","location":{"commit":"2ea454c78e13a6e01d50e59aee4cfb800eedc993","path":"src/mirror/mirror.go","range":{"startLine":60}},"description":"I wouldn't have guessed that this code does what the comment says."}
 
 {"timestamp":"1433963987","author":"bstanley@google.com","location":{"commit":"2ea454c78e13a6e01d50e59aee4cfb800eedc993","path":"src/mirror/mirror.go","range":{"startLine":48}},"description":"Do we need to support multiple timers per repo?"}
+
+{"timestamp":"1433968905","author":"ojarjur@google.com","location":{"commit":"2ea454c78e13a6e01d50e59aee4cfb800eedc993","path":"src/mirror/mirror.go","range":{"startLine":48}},"description":"On second thought, we don't even really *need* multiple timers at all.\n\nI'm going to change this to use a single global timer."}
