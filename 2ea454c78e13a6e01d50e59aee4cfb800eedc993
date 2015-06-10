@@ -1,1 +1,3 @@
 {"timestamp":"1433963987","author":"bstanley@google.com","description":"A couple of questions."}
+
+{"timestamp":"1433963987","author":"bstanley@google.com","location":{"commit":"2ea454c78e13a6e01d50e59aee4cfb800eedc993","path":"src/mirror/mirror.go","range":{"startLine":60}},"description":"I wouldn't have guessed that this code does what the comment says."}
