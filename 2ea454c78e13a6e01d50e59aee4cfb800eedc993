@@ -11,3 +11,5 @@
 {"timestamp":"1434042310","author":"amshali@google.com","location":{"commit":"d03068138180fafd930878e24f5787c805893692","path":"src/main.go","range":{"startLine":72}},"description":"What's the point of this flag here? If flag is false we will busy loop here on findRepos and mirroring them? It seems to me like we *always* need to have this ticking.  "}
 
 {"timestamp":"1434042711","author":"ojarjur@google.com","location":{"commit":"d03068138180fafd930878e24f5787c805893692","path":"src/main.go","range":{"startLine":72}},"description":"That flag indicates that we are pushing to/pulling from a remote repo. If we aren't doing that, then all of the mirroring consists of local git operations, so there's no need to throttle."}
+
+{"timestamp":"1434043218","author":"amshali@google.com","resolved":true}
