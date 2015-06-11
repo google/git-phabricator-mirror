@@ -13,3 +13,5 @@
 {"timestamp":"1434042711","author":"ojarjur@google.com","location":{"commit":"d03068138180fafd930878e24f5787c805893692","path":"src/main.go","range":{"startLine":72}},"description":"That flag indicates that we are pushing to/pulling from a remote repo. If we aren't doing that, then all of the mirroring consists of local git operations, so there's no need to throttle."}
 
 {"timestamp":"1434043218","author":"amshali@google.com","resolved":true}
+
+{"timestamp":"1434043218","author":"amshali@google.com","location":{"commit":"d03068138180fafd930878e24f5787c805893692","path":"src/main.go","range":{"startLine":72}},"description":"My problem is with busy looping here when we do not pull/push to remote. It might not manifest itself because git operations are slow, but still I think it's a good idea to \"throttle\" here. Just my 2 cents."}
