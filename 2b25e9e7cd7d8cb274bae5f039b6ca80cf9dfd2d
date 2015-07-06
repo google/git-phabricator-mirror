@@ -1,0 +1,1 @@
+{"timestamp":"1436215768","author":"jhgilles","location":{"commit":"89e240271e26fa4b7bbcb0540627b0170d9e8307","path":"src/mirror/review/arcanist/diff.go","range":{"startLine":142}},"description":"`fmt.Errorf(\"%s\", setPropertyResponse.ErrorMessage)` or `errors.New(setPropertyResponse.ErrorMessage)`; otherwise you could get stuff like `\"%!s(MISSING)\"` in your error string."}
