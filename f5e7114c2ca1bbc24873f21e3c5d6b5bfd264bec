@@ -53,3 +53,5 @@
 {"timestamp":"1436833758","author":"ckerur","description":"One question ..I never realized this earlier ....Are there any tests ?"}
 
 {"timestamp":"1436830545","author":"ckerur","description":"Is there an easy way to see complete context of the change ?\n\nI only see\nf5e7114c2ca1\tf68c404ec798\tb72f7fc51a07\tojarjur@google.com\t  Added timeouts to the os.exec calls for querying both the Phabricator Conduit\ufffd"}
+
+{"timestamp":"1436833994","author":"ojarjur","description":"\u003e\u003e! In D239#4265, @ckerur wrote:\n\u003e One question ..I never realized this earlier ....Are there any tests ?\n\nThere are, but not nearly enough. I'm adding more in the other review that's out right now, but the methods which invoke external commands are not a good fit for unit tests.\n\nHowever, they are covered by our manual test plan (https://docs.google.com/document/d/1bDEkl-9nkCaq3k9veBnj2CiwukBaBTHxwx2jESob2zE), and I hope to eventually convert that into automated integration tests.\n\nTL;DR - This is a better fit for integration testing than unit testing."}
