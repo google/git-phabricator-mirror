@@ -3,3 +3,5 @@
 {"timestamp":"1436919789","author":"ckerur","description":"Minor questions/comments.\n"}
 
 {"timestamp":"1436919789","author":"ckerur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/comment/comment.go","range":{"startLine":183}},"description":"Might be good to add a meta-note about what is considered as overlapping..\nIts in the comments of different methods, but might help readability on this main function"}
+
+{"timestamp":"1436919789","author":"ckerur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":381}},"description":"No chance for out of bounds here correct ?"}
