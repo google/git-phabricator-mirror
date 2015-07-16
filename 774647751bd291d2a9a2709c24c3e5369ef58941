@@ -11,3 +11,5 @@
 {"timestamp":"1437068614","author":"ojarjur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/comment/comment.go","range":{"startLine":183}},"description":"Done"}
 
 {"timestamp":"1437068614","author":"ojarjur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":322}},"description":"These are defined by Phabricator's Differential API, so we shouldn't change it, but I'll add godoc explaining that's where these come from."}
+
+{"timestamp":"1437068614","author":"ojarjur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":381}},"description":"No, this is inserting a value into a map. On the other end (when we perform lookups), the failure mode for a missing element is that lookups return the empty string, and we check for that (at line 346)."}
