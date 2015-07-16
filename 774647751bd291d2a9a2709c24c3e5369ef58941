@@ -7,3 +7,5 @@
 {"timestamp":"1436919789","author":"ckerur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":381}},"description":"No chance for out of bounds here correct ?"}
 
 {"timestamp":"1436919789","author":"ckerur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/arcanist/arcanist.go","range":{"startLine":322}},"description":"the 'IsNewFile' seems like it should be a boolean type. It could be renamed or changed depending on what the intention is here"}
+
+{"timestamp":"1437068614","author":"ojarjur","location":{"commit":"58b1c2c9bd4ee017de03d64b6419d2de24988fbc","path":"src/mirror/review/comment/comment.go","range":{"startLine":183}},"description":"Done"}
