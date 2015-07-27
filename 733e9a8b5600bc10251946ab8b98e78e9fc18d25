@@ -3,3 +3,5 @@
 {"timestamp":"1438013743","author":"ojarjur","location":{"commit":"7c61d2039e13e8c0569218433de604305ea036a0","path":"git-phabricator-mirror/git-phabricator-mirror.go","range":{"startLine":24}},"description":"We will change the source location (the repo URL will change when we open source this), and we will have to change the source code accordingly.\n\nHowever, this is the way you bundle Go source code so that it works with the Go tools, and we should not be trying to blaze our own trail in that regard."}
 
 {"timestamp":"1438025913","author":"jhgilles","description":"LGTM"}
+
+{"timestamp":"1438026266","author":"jhgilles","resolved":true}
