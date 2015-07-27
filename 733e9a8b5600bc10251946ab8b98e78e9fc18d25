@@ -1,0 +1,1 @@
+{"timestamp":"1437972846","author":"amshali","location":{"commit":"7c61d2039e13e8c0569218433de604305ea036a0","path":"git-phabricator-mirror/git-phabricator-mirror.go","range":{"startLine":24}},"description":"Isn't this a bad idea? Hard coding the source location? What if we change the source location? Awful in my opinion.\n\nI object to this change. "}
