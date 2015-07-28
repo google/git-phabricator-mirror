@@ -3,3 +3,5 @@
 {"timestamp":"1438042736","author":"ojarjur","location":{"commit":"056639c5d11002e30783181fa111a76cc078b27e","path":"LICENSE","range":{"startLine":190}},"description":"That's not related to this change, so let's discuss it offline."}
 
 {"timestamp":"1438043341","author":"ckerur","resolved":true}
+
+{"timestamp":"1438043341","author":"ckerur","description":"LGTM...but I don't know better :)\nIs there a place we can see our specific checklist for OSS ?"}
