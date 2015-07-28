@@ -1,3 +1,5 @@
 {"timestamp":"1438042510","author":"amshali","location":{"commit":"056639c5d11002e30783181fa111a76cc078b27e","path":"LICENSE","range":{"startLine":190}},"description":"What shall we do for this?"}
 
 {"timestamp":"1438042736","author":"ojarjur","location":{"commit":"056639c5d11002e30783181fa111a76cc078b27e","path":"LICENSE","range":{"startLine":190}},"description":"That's not related to this change, so let's discuss it offline."}
+
+{"timestamp":"1438043341","author":"ckerur","resolved":true}
