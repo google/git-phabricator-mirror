@@ -136,6 +136,8 @@ type differentialDatabaseTransaction struct {
 	CommentPHID *string
 }
 
+type ReadTransactions func(reviewID string) ([]differentialDatabaseTransaction, error)
+
 func readDatabaseTransactions(reviewID string) ([]differentialDatabaseTransaction, error) {
 	var transactions []differentialDatabaseTransaction
 	result := runSqlCommandOrDie(fmt.Sprintf(selectTransactionsQueryTemplate, reviewID))
@@ -178,6 +180,8 @@ type differentialDatabaseTransactionComment struct {
 	ReplyToCommentPHID *string
 	Content            string
 }
+
+type ReadTransactionComment func(transactionID string) (*differentialDatabaseTransactionComment, error)
 
 func readDatabaseTransactionComment(transactionID string) (*differentialDatabaseTransactionComment, error) {
 	result := runSqlCommandOrDie(fmt.Sprintf(selectTransactionCommentsQueryTemplate, transactionID))
@@ -228,12 +232,19 @@ func readDatabaseTransactionComment(transactionID string) (*differentialDatabase
 
 // LoadComments takes in a differentialReview and returns the associated comments.
 func (review differentialReview) LoadComments() []comment.Comment {
-	allTransactions, err := readDatabaseTransactions(review.PHID)
+	return LoadComments(review, readDatabaseTransactions, readDatabaseTransactionComment, lookupUser)
+}
+
+func LoadComments(review differentialReview, readTransactions ReadTransactions, readTransactionComment ReadTransactionComment, lookupUser UserLookup) []comment.Comment {
+
+	allTransactions, err := readTransactions(review.PHID)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var comments []comment.Comment
 	commentsByPHID := make(map[string]comment.Comment)
+	rejectionCommentsByUser := make(map[string][]string)
+
 	for _, transaction := range allTransactions {
 		author, err := lookupUser(transaction.AuthorPHID)
 		if err != nil {
@@ -248,19 +259,9 @@ func (review differentialReview) LoadComments() []comment.Comment {
 		} else {
 			c.Author = author.UserName
 		}
-		if transaction.Type == "differential:action" && transaction.NewValue != nil {
-			action := *transaction.NewValue
-			var resolved bool
-			if action == "\"accept\"" {
-				resolved = true
-				c.Resolved = &resolved
-			} else if action == "\"reject\"" {
-				resolved = false
-				c.Resolved = &resolved
-			}
-		}
+
 		if transaction.CommentPHID != nil {
-			transactionComment, err := readDatabaseTransactionComment(transaction.PHID)
+			transactionComment, err := readTransactionComment(transaction.PHID)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -288,12 +289,48 @@ func (review differentialReview) LoadComments() []comment.Comment {
 				}
 			}
 		}
+
+		// Set the resolved bit based on whether the change was approved or not.
+		if transaction.Type == "differential:action" && transaction.NewValue != nil {
+			action := *transaction.NewValue
+			var resolved bool
+			if action == "\"accept\"" {
+				resolved = true
+				c.Resolved = &resolved
+
+				// Add child comments to all previous rejects by this user and make them accepts
+				for _, rejectionCommentHash := range rejectionCommentsByUser[author.UserName] {
+					approveComment := comment.Comment{
+						Author:    c.Author,
+						Timestamp: c.Timestamp,
+						Resolved:  &resolved,
+						Parent:    rejectionCommentHash,
+					}
+					comments = append(comments, approveComment)
+				}
+			} else if action == "\"reject\"" {
+				resolved = false
+				c.Resolved = &resolved
+			}
+
+		}
+
 		// Phabricator only publishes inline comments when you publish a top-level comment.
 		// This results in a lot of empty top-level comments, which we do not want to mirror.
 		// To work around this, we only return comments that are non-empty.
 		if c.Parent != "" || c.Location != nil || c.Description != "" || c.Resolved != nil {
 			comments = append(comments, c)
 			commentsByPHID[transaction.PHID] = c
+
+			//If this was a rejection comment, add it to ordered comment hash
+			if *c.Resolved == false {
+				commentHash, err := c.Hash()
+				if err != nil {
+					log.Fatal(err)
+				}
+				rejectionCommentsByUser[author.UserName] = append(rejectionCommentsByUser[author.UserName], commentHash)
+			}
+
 		}
 	}
 	return comments

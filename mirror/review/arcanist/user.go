@@ -103,6 +103,8 @@ func queryUser(name string) (*user, error) {
 	})
 }
 
+type UserLookup func(userPHID string) (*user, error)
+
 // lookupUser reads the Phabricator user given the corresponding unique ID.
 func lookupUser(userPHID string) (*user, error) {
 	return userCacheLookup(userPHID, userLookupCache, func() (*user, error) {
