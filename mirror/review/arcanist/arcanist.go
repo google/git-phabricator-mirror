@@ -75,7 +75,9 @@ func runArcCommandOrDie(method string, request interface{}, response interface{}
 
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
-	cmd.Start()
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
 	go func() {
 		time.Sleep(arcanistRequestTimeout)
 		cmd.Process.Kill()
