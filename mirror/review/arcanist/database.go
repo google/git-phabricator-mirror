@@ -323,7 +323,7 @@ func LoadComments(review differentialReview, readTransactions ReadTransactions, 
 			commentsByPHID[transaction.PHID] = c
 
 			//If this was a rejection comment, add it to ordered comment hash
-			if *c.Resolved == false {
+			if c.Resolved != nil && *c.Resolved == false {
 				commentHash, err := c.Hash()
 				if err != nil {
 					log.Fatal(err)
