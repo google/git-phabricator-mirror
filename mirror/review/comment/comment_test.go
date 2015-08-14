@@ -25,6 +25,8 @@ func TestOverlaps(t *testing.T) {
 	description := `Some comment description
 
 With some text in it.`
+	reject := false
+	accept := true
 	location := CommentLocation{
 		Commit: "ABCDEFG",
 		Path:   "hello.txt",
@@ -49,6 +51,22 @@ With some text in it.`
 	}
 	if !quotedComment.Overlaps(comment) {
 		t.Errorf("%v and %v do not overlap", quotedComment, comment)
+	}
+
+	blankComment := Comment{
+		Timestamp: "012345",
+		Author:    "bar@foo.com",
+		Resolved:  &reject,
+	}
+
+	blankComment2 := Comment{
+		Timestamp: "012345",
+		Author:    "bar@foo.com",
+		Resolved:  &accept,
+	}
+
+	if blankComment.Overlaps(blankComment2) {
+		t.Errorf("%v and %v  overlap", blankComment, blankComment2)
 	}
 }
 

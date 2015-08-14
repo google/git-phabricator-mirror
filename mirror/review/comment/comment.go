@@ -189,6 +189,9 @@ func (comment Comment) Overlaps(other Comment) bool {
 	if !comment.descriptionOverlaps(other) {
 		return false
 	}
+	if comment.Resolved != nil || other.Resolved != nil {
+		return false
+	}
 	if comment.Location == nil && other.Location == nil {
 		return true
 	}
