@@ -184,14 +184,24 @@ func (location CommentLocation) Overlaps(other CommentLocation) bool {
 // git-notes do not have an exact match, so we have to introduce a bit of a fudge-factor.
 //
 // We define overlap to mean that two comments are anchored at the same location,
-// and that the two descriptions are either identical, or one is a quote of the other.
+// and that the two descriptions are either identical, or one is a quote of the other
+// and if their resolved bits are unset or set but with the same timestamp and have the same value
 func (comment Comment) Overlaps(other Comment) bool {
 	if !comment.descriptionOverlaps(other) {
 		return false
 	}
-	if comment.Resolved != nil || other.Resolved != nil {
+	if (comment.Resolved != nil && other.Resolved == nil) ||
+		(comment.Resolved == nil && other.Resolved != nil) {
 		return false
 	}
+
+	if comment.Resolved != nil && other.Resolved != nil {
+		if (*comment.Resolved != *other.Resolved) ||
+			(comment.Timestamp != other.Timestamp) {
+			return false
+		}
+	}
+
 	if comment.Location == nil && other.Location == nil {
 		return true
 	}
