@@ -245,6 +245,7 @@ func LoadComments(review differentialReview, readTransactions ReadTransactions, 
 	commentsByPHID := make(map[string]comment.Comment)
 	rejectionCommentsByUser := make(map[string][]string)
 
+	log.Printf("LOADCOMMENTS: Returning %d transactions", len(allTransactions))
 	for _, transaction := range allTransactions {
 		author, err := lookupUser(transaction.AuthorPHID)
 		if err != nil {
@@ -307,6 +308,7 @@ func LoadComments(review differentialReview, readTransactions ReadTransactions, 
 						Parent:    rejectionCommentHash,
 					}
 					comments = append(comments, approveComment)
+					log.Printf("LOADCOMMENTS: Received approval. Adding child comment %v with parent hash %x", approveComment, rejectionCommentHash)
 				}
 			} else if action == "\"reject\"" {
 				resolved = false
@@ -328,10 +330,13 @@ func LoadComments(review differentialReview, readTransactions ReadTransactions, 
 				if err != nil {
 					log.Fatal(err)
 				}
+				log.Printf("LOADCOMMENTS: Received rejection. Adding comment %v with hash %x", c, commentHash)
 				rejectionCommentsByUser[author.UserName] = append(rejectionCommentsByUser[author.UserName], commentHash)
 			}
 
 		}
 	}
+
+	log.Printf("LOADCOMMENTS: Returning %d comments", len(comments))
 	return comments
 }
