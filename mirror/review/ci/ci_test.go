@@ -18,8 +18,8 @@ package ci
 
 import (
 	"fmt"
+	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
 	"testing"
-  "source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
 )
 
 const testCINote1 = `{
@@ -47,32 +47,32 @@ const testCINote4 = `{
 }`
 
 func TestCIReport(t *testing.T) {
-  fmt.Println("Running test")
+	fmt.Println("Running test")
 
-  latestReport := GetLatestCIReport([]repository.Note{
- 									repository.Note(testCINote1),
-    							repository.Note(testCINote2),
- 								},)
+	latestReport := GetLatestCIReport([]repository.Note{
+		repository.Note(testCINote1),
+		repository.Note(testCINote2),
+	})
 
-  expected,ok := Parse(repository.Note(testCINote2))
-  if(ok != nil){}
-  if latestReport != expected {
+	expected, ok := Parse(repository.Note(testCINote2))
+	if ok != nil {
+	}
+	if latestReport != expected {
 		t.Errorf("This is not the latest %v ", latestReport)
 	}
 
-  latestReport = GetLatestCIReport([]repository.Note{
- 									repository.Note(testCINote1),
-    							repository.Note(testCINote2),
-   								repository.Note(testCINote3),
-    							repository.Note(testCINote4),
- 								},)
+	latestReport = GetLatestCIReport([]repository.Note{
+		repository.Note(testCINote1),
+		repository.Note(testCINote2),
+		repository.Note(testCINote3),
+		repository.Note(testCINote4),
+	})
 
-  expected,ok = Parse(repository.Note(testCINote4))
-  if(ok != nil){}
-  if latestReport != expected {
+	expected, ok = Parse(repository.Note(testCINote4))
+	if ok != nil {
+	}
+	if latestReport != expected {
 		t.Errorf("This is not the latest %v ", latestReport)
 	}
 
 }
-
-
