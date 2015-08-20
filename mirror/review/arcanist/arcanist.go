@@ -408,11 +408,11 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 
 	log.Println("The latest CI report for diff %s is %+v ", commitToDiffMap[lastCommitForLastDiff], report)
 	if report.URL != "" {
-		updateUnitResultsRequest := differentialUpdateUnitResultsRequest{
+		updateUnitResultsRequest := differentialUpdateUnitResultsRequest {
 																DiffID: commitToDiffMap[lastCommitForLastDiff],
 																Result: report.Status,
 																Link:   report.URL,
-		}
+															}
 		var unitResultsResponse differentialUpdateUnitResultsResponse
 		runArcCommandOrDie("differential.updateunitresults", updateUnitResultsRequest, &unitResultsResponse)
 		if unitResultsResponse.Error != "" {
