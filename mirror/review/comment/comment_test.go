@@ -55,7 +55,7 @@ With some text in it.`
 }
 
 func TestResolvedOverlaps(t *testing.T) {
-  reject := false
+	reject := false
 	accept := true
 
 	blankComment := Comment{
@@ -70,45 +70,44 @@ func TestResolvedOverlaps(t *testing.T) {
 		Resolved:  &accept,
 	}
 
-  // should not overlap because resolved bits are set for both 
-  // and different even though with same timestamp
+	// should not overlap because resolved bits are set for both
+	// and different even though with same timestamp
 	if blankComment.Overlaps(blankComment2) {
 		t.Errorf("%v and %v  overlap", blankComment, blankComment2)
 	}
 
-  blankComment2.Resolved = &reject
-  // should overlap because resolved bits are set for both and the same with the same timestamp
-  if !blankComment.Overlaps(blankComment2) {
+	blankComment2.Resolved = &reject
+	// should overlap because resolved bits are set for both and the same with the same timestamp
+	if !blankComment.Overlaps(blankComment2) {
 		t.Errorf("%v and %v  do not overlap", blankComment, blankComment2)
 	}
 
-  blankComment2.Timestamp = "56789"
-  // should not overlap because resolved bits are set for both and the same but timestamps are different
-  if blankComment.Overlaps(blankComment2) {
+	blankComment2.Timestamp = "56789"
+	// should not overlap because resolved bits are set for both and the same but timestamps are different
+	if blankComment.Overlaps(blankComment2) {
 		t.Errorf("%v and %v  overlap", blankComment, blankComment2)
 	}
 
-  blankComment2.Resolved = &accept
-  // should not overlap because resolved bits are set for both and the timestamps are different
-  if blankComment.Overlaps(blankComment2) {
+	blankComment2.Resolved = &accept
+	// should not overlap because resolved bits are set for both and the timestamps are different
+	if blankComment.Overlaps(blankComment2) {
 		t.Errorf("%v and %v  overlap", blankComment, blankComment2)
 	}
 
-  blankComment2.Timestamp = "012345"
-  blankComment2.Resolved = nil
-   // should not overlap because resolved bit is nil for one
-  if blankComment.Overlaps(blankComment2) {
+	blankComment2.Timestamp = "012345"
+	blankComment2.Resolved = nil
+	// should not overlap because resolved bit is nil for one
+	if blankComment.Overlaps(blankComment2) {
 		t.Errorf("%v and %v  overlap", blankComment, blankComment2)
 	}
 
-  blankComment.Resolved = nil
-  // should overlap because resolved bit is nil for both and there is no other descriptor
-  // seperating them apart
-  if !blankComment.Overlaps(blankComment2) {
+	blankComment.Resolved = nil
+	// should overlap because resolved bit is nil for both and there is no other descriptor
+	// seperating them apart
+	if !blankComment.Overlaps(blankComment2) {
 		t.Errorf("%v and %v do not overlap", blankComment, blankComment2)
 	}
 }
-
 
 func TestFilterOverlapping(t *testing.T) {
 	description := `Some comment description

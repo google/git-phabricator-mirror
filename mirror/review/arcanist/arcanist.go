@@ -28,6 +28,7 @@ import (
 	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review"
 	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/comment"
 	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/request"
+  "source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/ci"
 	"strconv"
 	"strings"
 	"time"
@@ -381,15 +382,44 @@ func (review differentialReview) buildCommentRequests(newComments []comment.Comm
 	return inlineRequests, commentRequests
 }
 
-func (arc Arcanist) mirrorCommentsIntoReview(review differentialReview, comments comment.CommentMap) {
+type differentialUpdateUnitResultsRequest struct {
+  DiffID string `json:"diffid"`
+  Result string `json:"result"`
+  Link string `json:"link"`
+}
+
+type differentialUpdateUnitResultsResponse struct {
+  Error        string `json:"error,omitempty"`
+  ErrorMessage string `json:"errorMessage,omitempty"`
+}
+
+func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments comment.CommentMap) {
 	existingComments := review.LoadComments()
 	newComments := comments.FilterOverlapping(existingComments)
 
+  var lastCommitForLastDiff string
 	commitToDiffMap := make(map[string]string)
 	for _, diffIDString := range review.Diffs {
 		lastCommit := findCommitForDiff(diffIDString)
 		commitToDiffMap[lastCommit] = diffIDString
+    lastCommitForLastDiff = lastCommit
 	}
+
+  report := ci.GetLatestCIReport(repo.GetNotes(ci.Ref, repository.Revision(lastCommitForLastDiff)))
+
+  log.Println("The latest CI report for diff %s is %+v ",commitToDiffMap[lastCommitForLastDiff], report)
+  if report.URL != "" {
+  	updateUnitResultsRequest := differentialUpdateUnitResultsRequest{
+																	DiffID: commitToDiffMap[lastCommitForLastDiff],
+      														Result: report.Status,
+      														Link: report.URL,
+		       										}
+  	var unitResultsResponse differentialUpdateUnitResultsResponse
+  	runArcCommandOrDie("differential.updateunitresults", updateUnitResultsRequest, &unitResultsResponse)
+  	if unitResultsResponse.Error != "" {
+    	log.Fatal(unitResultsResponse.ErrorMessage)
+  	}
+  }
 
 	inlineRequests, commentRequests := review.buildCommentRequests(newComments, commitToDiffMap)
 	for _, request := range inlineRequests {
@@ -426,8 +456,9 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 
 	for _, hashPair := range review.Hashes {
 		if len(hashPair) == 2 && hashPair[0] == commitHashType && hashPair[1] == headCommit {
-			// The review already has the hash of the HEAD commit, so we have nothing to do beyond mirroring comments.
-			arc.mirrorCommentsIntoReview(review, comments)
+			// The review already has the hash of the HEAD commit, so we have nothing to do beyond mirroring comments
+      // and build status if applicable
+			arc.mirrorCommentsIntoReview(repo, review, comments)
 			return
 		}
 	}
