@@ -406,7 +406,7 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 	}
 	report := ci.GetLatestCIReport(repo.GetNotes(ci.Ref, repository.Revision(lastCommitForLastDiff)))
 
-	log.Println("The latest CI report for diff %s is %+v ", commitToDiffMap[lastCommitForLastDiff], report)
+	log.Printf("The latest CI report for diff %s is %+v ", commitToDiffMap[lastCommitForLastDiff], report)
 	if report.URL != "" {
 		updateUnitResultsRequest := differentialUpdateUnitResultsRequest{
 			DiffID: commitToDiffMap[lastCommitForLastDiff],
