@@ -383,7 +383,7 @@ func (review differentialReview) buildCommentRequests(newComments []comment.Comm
 }
 
 type differentialUpdateUnitResultsRequest struct {
-	DiffID string `json:"diffid"`
+	DiffID string `json:"diff_id"`
 	Result string `json:"result"`
 	Link   string `json:"link"`
 }
