@@ -1,0 +1,1 @@
+{"timestamp":"1440198137","reviewRef":"refs/heads/ci","targetRef":"refs/heads/master","requester":"ckerur@google.com","reviewers":["ojarjur@google.com"],"description":"Adding URL to the message field of the UpdateUnit API as well\nas the link field does not render on the main widget"}
