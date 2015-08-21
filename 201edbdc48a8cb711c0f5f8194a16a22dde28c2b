@@ -9,3 +9,5 @@
 {"timestamp":"1440176709","author":"ojarjur","resolved":true}
 
 {"timestamp":"1440176709","author":"ojarjur","location":{"commit":"ea5d76d6e5b56af78b948b6852ce9af0bf7e76a0","path":"mirror/review/ci/ci_test.go","range":{"startLine":71}},"description":"Ah; OK.\n\nIn that case, can you add another test entry with a lower timestamp, to verify that we keep returning the latest CI note, and not just the last one?"}
+
+{"timestamp":"1440177150","author":"ckerur","location":{"commit":"ea5d76d6e5b56af78b948b6852ce9af0bf7e76a0","path":"mirror/review/ci/ci_test.go","range":{"startLine":71}},"description":"Sure!"}
