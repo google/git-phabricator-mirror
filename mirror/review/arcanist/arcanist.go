@@ -383,9 +383,10 @@ func (review differentialReview) buildCommentRequests(newComments []comment.Comm
 }
 
 type differentialUpdateUnitResultsRequest struct {
-	DiffID string `json:"diff_id"`
-	Result string `json:"result"`
-	Link   string `json:"link"`
+	DiffID  string `json:"diff_id"`
+	Result  string `json:"result"`
+	Link    string `json:"link"`
+	Message string `json:"message"`
 }
 
 type differentialUpdateUnitResultsResponse struct {
@@ -412,6 +413,8 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 			DiffID: commitToDiffMap[lastCommitForLastDiff],
 			Result: report.Status,
 			Link:   report.URL,
+			//TODO(ckerur): Link does not work for some reason. Remove putting URL in Message once it does
+			Message: report.URL,
 		}
 		var unitResultsResponse differentialUpdateUnitResultsResponse
 		runArcCommandOrDie("differential.updateunitresults", updateUnitResultsRequest, &unitResultsResponse)

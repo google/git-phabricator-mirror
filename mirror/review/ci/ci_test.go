@@ -17,7 +17,6 @@ limitations under the License.
 package ci
 
 import (
-	"fmt"
 	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
 	"testing"
 )
