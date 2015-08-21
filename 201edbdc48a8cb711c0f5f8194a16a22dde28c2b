@@ -5,3 +5,5 @@
 {"timestamp":"1440176339","author":"ojarjur","location":{"commit":"ea5d76d6e5b56af78b948b6852ce9af0bf7e76a0","path":"mirror/review/ci/ci_test.go","range":{"startLine":71}},"description":"Shouldn't the expected be testCINote3 (with a timestamp of 30 vs. a timestamp of 28)?"}
 
 {"timestamp":"1440176490","author":"ckerur","location":{"commit":"ea5d76d6e5b56af78b948b6852ce9af0bf7e76a0","path":"mirror/review/ci/ci_test.go","range":{"startLine":71}},"description":"No  , because testCINotes is NOT a valid CINote because of the 'status' field"}
+
+{"timestamp":"1440176709","author":"ojarjur","resolved":true}
