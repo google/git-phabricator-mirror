@@ -46,8 +46,13 @@ const testCINote4 = `{
 	"Status": "success"
 }`
 
+const testCINote5 = `{
+	"Timestamp": "27",
+	"URL": "www.google.com",
+	"Status": "success"
+}`
+
 func TestCIReport(t *testing.T) {
-	fmt.Println("Running test")
 
 	latestReport := GetLatestCIReport([]repository.Note{
 		repository.Note(testCINote1),
