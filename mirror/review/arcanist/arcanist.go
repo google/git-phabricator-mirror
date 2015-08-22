@@ -399,18 +399,22 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 	newComments := comments.FilterOverlapping(existingComments)
 
 	var lastCommitForLastDiff string
+	var latestDiffForReview string
 	commitToDiffMap := make(map[string]string)
 	for _, diffIDString := range review.Diffs {
 		lastCommit := findCommitForDiff(diffIDString)
 		commitToDiffMap[lastCommit] = diffIDString
-		lastCommitForLastDiff = lastCommit
+		if diffIDString > latestDiffForReview {
+			lastCommitForLastDiff = lastCommit
+			latestDiffForReview = diffIDString
+		}
 	}
 	report := ci.GetLatestCIReport(repo.GetNotes(ci.Ref, repository.Revision(lastCommitForLastDiff)))
 
-	log.Printf("The latest CI report for diff %s is %+v ", commitToDiffMap[lastCommitForLastDiff], report)
+	log.Printf("The latest CI report for diff %s is %+v ", latestDiffForReview, report)
 	if report.URL != "" {
 		updateUnitResultsRequest := differentialUpdateUnitResultsRequest{
-			DiffID: commitToDiffMap[lastCommitForLastDiff],
+			DiffID: latestDiffForReview,
 			Result: report.Status,
 			Link:   report.URL,
 			//TODO(ckerur): Link does not work for some reason. Remove putting URL in Message once it does
