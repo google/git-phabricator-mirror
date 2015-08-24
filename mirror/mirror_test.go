@@ -17,10 +17,10 @@ limitations under the License.
 package mirror
 
 import (
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/comment"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/request"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/review"
+	"github.com/google/git-phabricator-mirror/mirror/review/comment"
+	"github.com/google/git-phabricator-mirror/mirror/review/request"
 	"testing"
 )
 

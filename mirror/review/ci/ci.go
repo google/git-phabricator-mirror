@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"sort"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"strconv"
 )
 

@@ -19,7 +19,7 @@ package request
 
 import (
 	"encoding/json"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
 )
 
 const notesRef = "refs/notes/devtools/reviews"

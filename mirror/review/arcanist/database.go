@@ -31,7 +31,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/comment"
+	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"strconv"
 	"strings"
 	"time"

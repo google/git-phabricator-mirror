@@ -18,9 +18,9 @@ limitations under the License.
 package review
 
 import (
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/comment"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/request"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/review/comment"
+	"github.com/google/git-phabricator-mirror/mirror/review/request"
 )
 
 // Review represents a review tool's concept of a code review.

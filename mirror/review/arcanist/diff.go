@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/request"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/review/request"
 	"strconv"
 )
 

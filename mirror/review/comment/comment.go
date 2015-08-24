@@ -21,7 +21,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"strconv"
 	"strings"
 )

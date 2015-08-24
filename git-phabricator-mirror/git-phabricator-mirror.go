@@ -21,8 +21,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"time"
 )
 

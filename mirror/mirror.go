@@ -19,11 +19,11 @@ package mirror
 
 import (
 	"log"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/repository"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/arcanist"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/comment"
-	"source.developers.google.com/id/AOYtBqJZlBK.git/mirror/review/request"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
+	"github.com/google/git-phabricator-mirror/mirror/review"
+	"github.com/google/git-phabricator-mirror/mirror/review/arcanist"
+	"github.com/google/git-phabricator-mirror/mirror/review/comment"
+	"github.com/google/git-phabricator-mirror/mirror/review/request"
 )
 
 var arc = arcanist.Arcanist{}
