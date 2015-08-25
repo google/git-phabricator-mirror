@@ -59,6 +59,10 @@ const arcanistRequestTimeout = 1 * time.Minute
 type Arcanist struct {
 }
 
+// Filter processing of previously closed revisions.
+var closedRevisionsMap = make(map[repository.Revision]bool)
+
+
 // runArcCommandOrDie runs the given Conduit API call using the "arc" command line tool.
 //
 // Any errors that could occur here would be a sign of something being seriously
@@ -488,7 +492,13 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 
 // EnsureRequestExists runs the "arcanist" command-line tool to create a Differential diff for the given request, if one does not already exist.
 func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repository.Revision, req request.Request, comments map[string]comment.Comment) {
-	mergeBase, err := repo.GetMergeBase(repository.Revision(req.TargetRef), revision)
+
+  // If this revision has been previously closed shortcut all processing
+  if closedRevisionsMap[revision] {
+    return;
+  }
+
+  mergeBase, err := repo.GetMergeBase(repository.Revision(req.TargetRef), revision)
 	if err != nil {
 		// There are lots of reasons that we might not be able to compute a merge base,
 		// (e.g. the revision already being merged in, or being dropped and garbage collected),
@@ -505,6 +515,7 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repositor
 				review.close()
 			}
 		}
+    closedRevisionsMap[revision] = true
 		return
 	}
 
