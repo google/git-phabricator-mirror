@@ -1,0 +1,1 @@
+{"reviewRef":"refs/heads/ojarjur/cache-user-queries","targetRef":"refs/heads/master","requester":"ojarjur@google.com","description":"Added caching for user lookup and querying, so that we do not issue quite so many conduit calls"}

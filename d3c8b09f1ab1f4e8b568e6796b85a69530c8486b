@@ -1,0 +1,1 @@
+{"timestamp":"1440438139","reviewRef":"refs/heads/ojarjur/update-readme","targetRef":"refs/heads/master","requester":"ojarjur@google.com","reviewers":["ckerur@google.com"],"description":"Updated the README file to reference the format spec in the git-appraise README instead of duplicating it, and added instructions for installing from the github repo"}
