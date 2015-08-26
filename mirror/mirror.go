@@ -18,12 +18,12 @@ limitations under the License.
 package mirror
 
 import (
-	"log"
 	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"github.com/google/git-phabricator-mirror/mirror/review"
 	"github.com/google/git-phabricator-mirror/mirror/review/arcanist"
 	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	"log"
 )
 
 var arc = arcanist.Arcanist{}

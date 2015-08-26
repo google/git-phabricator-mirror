@@ -21,14 +21,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os/exec"
-	"sort"
 	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"github.com/google/git-phabricator-mirror/mirror/review"
+	"github.com/google/git-phabricator-mirror/mirror/review/analyses"
 	"github.com/google/git-phabricator-mirror/mirror/review/ci"
 	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	"log"
+	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -426,6 +427,13 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 			log.Fatal(unitResultsResponse.ErrorMessage)
 		}
 	}
+
+	lintReport := analyses.GetLatestAnalysesReport(repo.GetNotes(analyses.Ref, repository.Revision(lastCommitForLastDiff)))
+	lintResult := lintReport.GetLintReportResult()
+
+	log.Printf("The latest lint report for diff %s is %s ", latestDiffForReview, lintResult)
+
+	// Call linter API's of phabricator here
 
 	inlineRequests, commentRequests := review.buildCommentRequests(newComments, commitToDiffMap)
 	for _, request := range inlineRequests {

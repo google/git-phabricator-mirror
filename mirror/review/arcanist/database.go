@@ -29,9 +29,9 @@ package arcanist
 import (
 	"bytes"
 	"fmt"
+	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"log"
 	"os/exec"
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"strconv"
 	"strings"
 	"time"

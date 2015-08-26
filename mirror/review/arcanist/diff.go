@@ -20,10 +20,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"sort"
 	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	"log"
+	"sort"
 	"strconv"
 )
 

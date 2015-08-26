@@ -18,11 +18,11 @@ package main
 
 import (
 	"flag"
+	"github.com/google/git-phabricator-mirror/mirror"
+	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"log"
 	"os"
 	"path/filepath"
-	"github.com/google/git-phabricator-mirror/mirror"
-	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"time"
 )
 
