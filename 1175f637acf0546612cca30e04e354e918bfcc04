@@ -5,3 +5,5 @@
 {"timestamp":"1440544133","reviewRef":"refs/heads/ckerur/perf","targetRef":"refs/heads/master","requester":"ckerur@google.com","reviewers":["ojarjur@google.com"],"description":"Stop processing closed revisions over and over again"}
 
 {"timestamp":"1440545048","reviewRef":"refs/heads/ckerur/perf","targetRef":"refs/heads/master","requester":"ckerur@google.com","reviewers":["ojarjur@google.com"],"description":"Stop processing closed revisions over and over again"}
+
+{"timestamp":"1440607807","reviewRef":"refs/heads/ckerur/perf","targetRef":"refs/heads/master","requester":"ckerur@google.com","reviewers":["ojarjur@google.com"],"description":"Stop processing closed revisions over and over again"}
