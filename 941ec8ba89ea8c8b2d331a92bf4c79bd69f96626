@@ -1,3 +1,5 @@
 {"timestamp":"1442618754","author":"ojarjur","resolved":true}
 
 {"timestamp":"1442618815","author":"ojarjur","description":"LGTM"}
+
+{"timestamp":"1442618815","author":"ojarjur","location":{"commit":"941ec8ba89ea8c8b2d331a92bf4c79bd69f96626","path":"mirror/review/arcanist/diff.go","range":{"startLine":208}},"description":"It's unfortunate that Phabricator lost the distinction between \"postponed\" and \"skipped\"."}
