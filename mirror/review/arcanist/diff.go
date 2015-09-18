@@ -20,10 +20,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"sort"
 	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	"log"
+	"sort"
 	"strconv"
 )
 
@@ -205,8 +205,8 @@ func (arc Arcanist) createDifferentialDiff(repo repository.Repo, mergeBase, revi
 		SourceControlSystem:       "git",
 		SourceControlBaseRevision: string(mergeBase),
 		SourcePath:                repo.GetPath(),
-		LintStatus:                "5", // Status code 5 means "linter postponed"
-		UnitStatus:                "5", // Status code 5 means "unit tests have been postponed"
+		LintStatus:                "4", // Status code 5 means "linter skipped"
+		UnitStatus:                "4", // Status code 5 means "unit tests have been skipped"
 		Changes:                   changes,
 	}
 	var createResponse differentialCreateDiffResponse
