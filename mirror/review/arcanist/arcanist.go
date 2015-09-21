@@ -58,7 +58,10 @@ const arcanistRequestTimeout = 1 * time.Minute
 
 // unitDiffPropertyName is the name of the property that Phabricator uses for storing the unit test
 // results for a given Differential diff
-const unitDiffPropertyName = "arc:unit"
+const (
+	unitDiffPropertyName = "arc:unit"
+	lintDiffPropertyName = "arc:lint"
+)
 
 // Arcanist represents an instance of the "arcanist" command-line tool.
 type Arcanist struct {
@@ -409,6 +412,14 @@ func translateReportStatusToDifferentialUnitResult(status string) string {
 	}
 }
 
+type LintDiffProperty struct {
+	Code        string `json:"code,omitempty"`
+	Severity    string `json:"severity,omitempty"`
+	Path        string `json:"path,omitempty"`
+	Line        int    `json:"line,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
 func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments comment.CommentMap) {
 	existingComments := review.LoadComments()
 	newComments := comments.FilterOverlapping(existingComments)
@@ -450,11 +461,12 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 	}
 
 	lintReport := analyses.GetLatestAnalysesReport(repo.GetNotes(analyses.Ref, repository.Revision(lastCommitForLastDiff)))
-	lintResult := lintReport.GetLintReportResult()
-
-	log.Printf("The latest lint report for diff %s is %s ", latestDiffForReview, lintResult)
-
-	// Call linter API's of phabricator here
+	lintResults, err := lintReport.GetLintReportResult()
+	if err != nil {
+		log.Println("Failed to load the static analysis reports: " + err.Error())
+	} else {
+		arc.reportLintResults(latestDiffForReview, lintResults)
+	}
 
 	inlineRequests, commentRequests := review.buildCommentRequests(newComments, commitToDiffMap)
 	for _, request := range inlineRequests {
@@ -470,6 +482,31 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 		if response.Error != "" {
 			log.Println(response.ErrorMessage)
 		}
+	}
+}
+
+func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.AnalyzeResponse) {
+	log.Printf("The latest lint report for diff %d is %s ", diffID, lintResults)
+	var lintDiffProperties []LintDiffProperty
+	for _, analyzeResponse := range lintResults {
+		for _, note := range analyzeResponse.Notes {
+			lintProperty := LintDiffProperty{
+				Code: note.Category,
+				// TODO(ojarjur): Don't just treat everything as a warning.
+				Severity:    "warning",
+				Path:        note.Location.Path,
+				Line:        note.Location.Range.StartLine,
+				Description: note.Description,
+			}
+			lintDiffProperties = append(lintDiffProperties, lintProperty)
+		}
+	}
+	propertyBytes, err := json.Marshal(lintDiffProperties)
+	if err == nil {
+		err = arc.setDiffProperty(diffID, lintDiffPropertyName, string(propertyBytes))
+	}
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 }
 

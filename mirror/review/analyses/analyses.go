@@ -27,7 +27,30 @@ type Report struct {
 	Version int `json:"v,omitempty"`
 }
 
-func (lintReport Report) GetLintReportResult() string {
+type LocationRange struct {
+	StartLine int `json:"start_line,omitempty"`
+}
+
+type Location struct {
+	Path  string        `json:"path,omitempty"`
+	Range LocationRange `json:"range,omitempty"`
+}
+
+type Note struct {
+	Location    Location `json:"location,omitempty"`
+	Category    string   `json:"category,omitempty"`
+	Description string   `json:"description"`
+}
+
+type AnalyzeResponse struct {
+	Notes []Note `json:"note,omitempty"`
+}
+
+type ReportDetails struct {
+	AnalyzeResponse []AnalyzeResponse `json:"analyze_response,omitempty"`
+}
+
+func (lintReport Report) GetLintReportResult() ([]AnalyzeResponse, error) {
 	res, err := http.Get(lintReport.URL)
 	if err != nil {
 		log.Fatal(err)
@@ -38,8 +61,12 @@ func (lintReport Report) GetLintReportResult() string {
 		log.Fatal(err)
 	}
 	log.Printf("Analyses Results %s", analysesResults)
-	// figure out if we should be returning string here based on what the phabricator API needs
-	return string(analysesResults[:])
+	var details ReportDetails
+	err = json.Unmarshal([]byte(analysesResults), &details)
+	if err != nil {
+		return nil, err
+	}
+	return details.AnalyzeResponse, nil
 }
 
 // Parse parses a CI report from a git note.
