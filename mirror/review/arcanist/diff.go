@@ -246,9 +246,6 @@ func (arc Arcanist) createDifferentialDiff(repo repository.Repo, mergeBase, revi
 	if err := arc.setDiffProperty(createResponse.Response.ID, "local:commits", string(localCommitsProperty)); err != nil {
 		return nil, err
 	}
-	if err := arc.setDiffProperty(createResponse.Response.ID, "arc:unit", "{}"); err != nil {
-		return nil, err
-	}
 
 	return &createResponse.Response, nil
 }
