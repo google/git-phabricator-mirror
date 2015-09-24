@@ -501,6 +501,9 @@ func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.Analyze
 			lintDiffProperties = append(lintDiffProperties, lintProperty)
 		}
 	}
+	if lintDiffProperties == nil {
+		return
+	}
 	propertyBytes, err := json.Marshal(lintDiffProperties)
 	if err == nil {
 		err = arc.setDiffProperty(diffID, lintDiffPropertyName, string(propertyBytes))

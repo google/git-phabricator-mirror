@@ -51,6 +51,9 @@ type ReportDetails struct {
 }
 
 func (lintReport Report) GetLintReportResult() ([]AnalyzeResponse, error) {
+	if lintReport.URL == "" {
+		return nil, nil
+	}
 	res, err := http.Get(lintReport.URL)
 	if err != nil {
 		log.Fatal(err)
