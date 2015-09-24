@@ -205,8 +205,8 @@ func (arc Arcanist) createDifferentialDiff(repo repository.Repo, mergeBase, revi
 		SourceControlSystem:       "git",
 		SourceControlBaseRevision: string(mergeBase),
 		SourcePath:                repo.GetPath(),
-		LintStatus:                "4", // Status code 5 means "linter skipped"
-		UnitStatus:                "4", // Status code 5 means "unit tests have been skipped"
+		LintStatus:                "6", // Status code 6 means "linter auto-skipped"
+		UnitStatus:                "6", // Status code 6 means "unit tests have been auto-skipped"
 		Changes:                   changes,
 	}
 	var createResponse differentialCreateDiffResponse
