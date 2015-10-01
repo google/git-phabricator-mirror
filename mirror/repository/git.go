@@ -52,7 +52,7 @@ func (repo GitRepo) runGitCommandWithEnvAndTimeout(timeout *time.Duration, env [
 		}()
 	}
 	if err := cmd.Wait(); err != nil {
-		log.Printf("A git command failed: '%v', '%v', '%s', '%s'\n", args, err, stdout, stderr)
+		log.Printf("A git command failed: %q, %q, %q, %q\n", args, err, stdout.String(), stderr.String())
 		return "", err
 	}
 	return strings.Trim(stdout.String(), "\n"), nil
