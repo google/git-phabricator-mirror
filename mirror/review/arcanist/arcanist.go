@@ -56,9 +56,16 @@ const defaultRepoDirPrefix = "/var/repo/"
 // arcanistRequestTimeout is the amount of time we allow arcanist requests to wait before interrupting them.
 const arcanistRequestTimeout = 1 * time.Minute
 
+// unitDiffPropertyName is the name of the property that Phabricator uses for storing the unit test
+// results for a given Differential diff
+const unitDiffPropertyName = "arc:unit"
+
 // Arcanist represents an instance of the "arcanist" command-line tool.
 type Arcanist struct {
 }
+
+// Filter processing of previously closed revisions.
+var closedRevisionsMap = make(map[repository.Revision]bool)
 
 // runArcCommandOrDie runs the given Conduit API call using the "arc" command line tool.
 //
@@ -383,16 +390,23 @@ func (review differentialReview) buildCommentRequests(newComments []comment.Comm
 	return inlineRequests, commentRequests
 }
 
-type differentialUpdateUnitResultsRequest struct {
-	DiffID  string `json:"diff_id"`
-	Result  string `json:"result"`
-	Link    string `json:"link"`
-	Message string `json:"message"`
+type differentialUnitDiffProperty struct {
+	Name   string `json:"name"`
+	Link   string `json:"link"`
+	Result string `json:"result"`
 }
 
-type differentialUpdateUnitResultsResponse struct {
-	Error        string `json:"error,omitempty"`
-	ErrorMessage string `json:"errorMessage,omitempty"`
+func translateReportStatusToDifferentialUnitResult(status string) string {
+	if status == "success" {
+		return "pass"
+	} else if status == "failure" {
+		return "fail"
+	} else {
+		// TODO(ojarjur): This is less than ideal. Phabricator no longer has a concept
+		// of pending unit tests, so the closest match we have is that the tests have been
+		// skipped.
+		return "skip"
+	}
 }
 
 func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments comment.CommentMap) {
@@ -400,31 +414,38 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 	newComments := comments.FilterOverlapping(existingComments)
 
 	var lastCommitForLastDiff string
-	var latestDiffForReview string
+	var latestDiffForReview int
 	commitToDiffMap := make(map[string]string)
 	for _, diffIDString := range review.Diffs {
 		lastCommit := findCommitForDiff(diffIDString)
 		commitToDiffMap[lastCommit] = diffIDString
-		if diffIDString > latestDiffForReview {
+		diffID, err := strconv.Atoi(diffIDString)
+		if err == nil && diffID > latestDiffForReview {
 			lastCommitForLastDiff = lastCommit
-			latestDiffForReview = diffIDString
+			latestDiffForReview = diffID
 		}
 	}
 	report := ci.GetLatestCIReport(repo.GetNotes(ci.Ref, repository.Revision(lastCommitForLastDiff)))
 
-	log.Printf("The latest CI report for diff %s is %+v ", latestDiffForReview, report)
+	log.Printf("The latest CI report for diff %d is %+v ", latestDiffForReview, report)
 	if report.URL != "" {
-		updateUnitResultsRequest := differentialUpdateUnitResultsRequest{
-			DiffID: latestDiffForReview,
-			Result: report.Status,
+		unitDiffProperty := differentialUnitDiffProperty{
+			Name:   report.Agent,
 			Link:   report.URL,
-			//TODO(ckerur): Link does not work for some reason. Remove putting URL in Message once it does
-			Message: report.URL,
+			Result: translateReportStatusToDifferentialUnitResult(report.Status),
 		}
-		var unitResultsResponse differentialUpdateUnitResultsResponse
-		runArcCommandOrDie("differential.updateunitresults", updateUnitResultsRequest, &unitResultsResponse)
-		if unitResultsResponse.Error != "" {
-			log.Fatal(unitResultsResponse.ErrorMessage)
+		// Note that although the unit tests property is a JSON object, Phabricator
+		// expects there to be a list of such objects for any given diff. Therefore
+		// we wrap the object in a list before marshaling it to send to the server.
+		// TODO(ojarjur): We should take advantage of the fact that this is a list,
+		// and include the latest CI report for each agent. That would allow us to
+		// display results from multiple test runners in a code review.
+		propertyBytes, err := json.Marshal([]differentialUnitDiffProperty{unitDiffProperty})
+		if err == nil {
+			err = arc.setDiffProperty(latestDiffForReview, unitDiffPropertyName, string(propertyBytes))
+		}
+		if err != nil {
+			log.Fatal(err.Error())
 		}
 	}
 
@@ -496,6 +517,12 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 
 // EnsureRequestExists runs the "arcanist" command-line tool to create a Differential diff for the given request, if one does not already exist.
 func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repository.Revision, req request.Request, comments map[string]comment.Comment) {
+
+	// If this revision has been previously closed shortcut all processing
+	if closedRevisionsMap[revision] {
+		return
+	}
+
 	mergeBase, err := repo.GetMergeBase(repository.Revision(req.TargetRef), revision)
 	if err != nil {
 		// There are lots of reasons that we might not be able to compute a merge base,
@@ -513,6 +540,7 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repositor
 				review.close()
 			}
 		}
+		closedRevisionsMap[revision] = true
 		return
 	}
 
