@@ -32,14 +32,14 @@ type LocationRange struct {
 }
 
 type Location struct {
-	Path  string        `json:"path,omitempty"`
-	Range LocationRange `json:"range,omitempty"`
+	Path  string         `json:"path,omitempty"`
+	Range *LocationRange `json:"range,omitempty"`
 }
 
 type Note struct {
-	Location    Location `json:"location,omitempty"`
-	Category    string   `json:"category,omitempty"`
-	Description string   `json:"description"`
+	Location    *Location `json:"location,omitempty"`
+	Category    string    `json:"category,omitempty"`
+	Description string    `json:"description"`
 }
 
 type AnalyzeResponse struct {
@@ -56,12 +56,12 @@ func (lintReport Report) GetLintReportResult() ([]AnalyzeResponse, error) {
 	}
 	res, err := http.Get(lintReport.URL)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	analysesResults, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	log.Printf("Analyses Results %s", analysesResults)
 	var details ReportDetails

@@ -17,6 +17,8 @@ limitations under the License.
 package arcanist
 
 import (
+	"github.com/google/git-phabricator-mirror/mirror/review/analyses"
+	"github.com/google/git-phabricator-mirror/mirror/review/ci"
 	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"strings"
 	"testing"
@@ -93,5 +95,111 @@ func TestGenerateCommentRequests(t *testing.T) {
 	}
 	if secondInline.DiffID != "2" || !strings.HasSuffix(secondInline.Content, "A line comment") || secondInline.LineNumber != 42 {
 		t.Errorf("Unexpected second inline request: %v", secondInline)
+	}
+}
+
+func TestGenerateUnitDiffProperty(t *testing.T) {
+	emptyReport := ci.Report{}
+	statusOnlyReport := ci.Report{
+		Status: "failure",
+	}
+	failedReport := ci.Report{
+		URL:    "example.com",
+		Status: "failure",
+	}
+	passedReport := ci.Report{
+		URL:    "example.com",
+		Status: "success",
+	}
+	gibberishReport := ci.Report{
+		URL:    "example.com",
+		Status: "gibberish",
+	}
+
+	if prop, err := generateUnitDiffProperty(emptyReport); err != nil || prop != "" {
+		t.Errorf("Failed to generate the diff property for an empty unit report: %q", prop)
+	}
+	if prop, err := generateUnitDiffProperty(statusOnlyReport); err != nil || prop != "" {
+		t.Errorf("Failed to generate the diff property for a status-only unit report: %q", prop)
+	}
+	if prop, err := generateUnitDiffProperty(failedReport); err != nil || prop != "[{\"name\":\"\",\"link\":\"example.com\",\"result\":\"fail\"}]" {
+		t.Errorf("Failed to generate the diff property for a failure unit report: %q", prop)
+	}
+	if prop, err := generateUnitDiffProperty(passedReport); err != nil || prop != "[{\"name\":\"\",\"link\":\"example.com\",\"result\":\"pass\"}]" {
+		t.Errorf("Failed to generate the diff property for a success unit report: %q", prop)
+	}
+	if prop, err := generateUnitDiffProperty(gibberishReport); err != nil || prop != "[{\"name\":\"\",\"link\":\"example.com\",\"result\":\"skip\"}]" {
+		t.Errorf("Failed to generate the diff property for a gibberish unit report: %q", prop)
+	}
+}
+
+func TestGenerateLintDiffProperty(t *testing.T) {
+	noResponse := []analyses.AnalyzeResponse{}
+	multipleEmptyResponses := []analyses.AnalyzeResponse{
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{},
+		},
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{},
+		},
+	}
+	testAnalyses := []analyses.AnalyzeResponse{
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{
+				analyses.Note{
+					Category:    "Test",
+					Description: "Test 1",
+				},
+				analyses.Note{
+					Category:    "Test",
+					Description: "Test 2",
+					Location: &analyses.Location{
+						Path: "hello.txt",
+						Range: &analyses.LocationRange{
+							StartLine: 42,
+						},
+					},
+				},
+				analyses.Note{
+					Category:    "Test",
+					Description: "Test 3",
+					Location: &analyses.Location{
+						Path: "hello.txt",
+					},
+				},
+			},
+		},
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{},
+		},
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{
+				analyses.Note{
+					Category:    "Test",
+					Description: "Test 4",
+					Location: &analyses.Location{
+						Path: "hello.txt",
+						Range: &analyses.LocationRange{
+							StartLine: 1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if prop, err := generateLintDiffProperty(noResponse); err != nil || prop != "[]" {
+		t.Errorf("Failed to convert an empty static analysis result")
+	}
+	if prop, err := generateLintDiffProperty(multipleEmptyResponses); err != nil || prop != "[]" {
+		t.Errorf("Failed to convert a list of empty static analysis results")
+	}
+
+	prop, err := generateLintDiffProperty(testAnalyses)
+	if err != nil {
+		t.Errorf("Failed to convert the non-trivial analysis results")
+	}
+	if prop != "[{\"code\":\"Test\",\"severity\":\"warning\",\"path\":\"hello.txt\",\"line\":42,\"description\":\"Test 2\"},{\"code\":\"Test\",\"severity\":\"warning\",\"path\":\"hello.txt\",\"line\":1,\"description\":\"Test 4\"}]" {
+		t.Errorf("Wrong conversion for the non-trivial analysis results: %q", prop)
 	}
 }

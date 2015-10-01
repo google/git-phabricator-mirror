@@ -437,28 +437,7 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 		}
 	}
 	report := ci.GetLatestCIReport(repo.GetNotes(ci.Ref, repository.Revision(lastCommitForLastDiff)))
-
-	log.Printf("The latest CI report for diff %d is %+v ", latestDiffForReview, report)
-	if report.URL != "" {
-		unitDiffProperty := differentialUnitDiffProperty{
-			Name:   report.Agent,
-			Link:   report.URL,
-			Result: translateReportStatusToDifferentialUnitResult(report.Status),
-		}
-		// Note that although the unit tests property is a JSON object, Phabricator
-		// expects there to be a list of such objects for any given diff. Therefore
-		// we wrap the object in a list before marshaling it to send to the server.
-		// TODO(ojarjur): We should take advantage of the fact that this is a list,
-		// and include the latest CI report for each agent. That would allow us to
-		// display results from multiple test runners in a code review.
-		propertyBytes, err := json.Marshal([]differentialUnitDiffProperty{unitDiffProperty})
-		if err == nil {
-			err = arc.setDiffProperty(latestDiffForReview, unitDiffPropertyName, string(propertyBytes))
-		}
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-	}
+	arc.reportUnitResults(latestDiffForReview, report)
 
 	lintReport := analyses.GetLatestAnalysesReport(repo.GetNotes(analyses.Ref, repository.Revision(lastCommitForLastDiff)))
 	lintResults, err := lintReport.GetLintReportResult()
@@ -485,28 +464,75 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 	}
 }
 
-func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.AnalyzeResponse) {
-	log.Printf("The latest lint report for diff %d is %s ", diffID, lintResults)
+func generateUnitDiffProperty(report ci.Report) (string, error) {
+	if report.URL == "" {
+		return "", nil
+	}
+	unitDiffProperty := differentialUnitDiffProperty{
+		Name:   report.Agent,
+		Link:   report.URL,
+		Result: translateReportStatusToDifferentialUnitResult(report.Status),
+	}
+	// Note that although the unit tests property is a JSON object, Phabricator
+	// expects there to be a list of such objects for any given diff. Therefore
+	// we wrap the object in a list before marshaling it to send to the server.
+	// TODO(ojarjur): We should take advantage of the fact that this is a list,
+	// and include the latest CI report for each agent. That would allow us to
+	// display results from multiple test runners in a code review.
+	propertyBytes, err := json.Marshal([]differentialUnitDiffProperty{unitDiffProperty})
+	if err != nil {
+		return "", err
+	}
+	return string(propertyBytes), nil
+}
+
+func (arc Arcanist) reportUnitResults(diffID int, unitReport ci.Report) {
+	log.Printf("The latest unit report for diff %d is %s ", diffID, unitReport)
+	diffProperty, err := generateUnitDiffProperty(unitReport)
+	if err == nil && diffProperty != "" {
+		err = arc.setDiffProperty(diffID, unitDiffPropertyName, diffProperty)
+	}
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+}
+
+func generateLintDiffProperty(lintResults []analyses.AnalyzeResponse) (string, error) {
+	warningsFound := false
 	var lintDiffProperties []LintDiffProperty
 	for _, analyzeResponse := range lintResults {
 		for _, note := range analyzeResponse.Notes {
-			lintProperty := LintDiffProperty{
-				Code: note.Category,
-				// TODO(ojarjur): Don't just treat everything as a warning.
-				Severity:    "warning",
-				Path:        note.Location.Path,
-				Line:        note.Location.Range.StartLine,
-				Description: note.Description,
+			warningsFound = true
+			if note.Location != nil && note.Location.Range != nil {
+				lintProperty := LintDiffProperty{
+					Code: note.Category,
+					// TODO(ojarjur): Don't just treat everything as a warning.
+					Severity:    "warning",
+					Path:        note.Location.Path,
+					Line:        note.Location.Range.StartLine,
+					Description: note.Description,
+				}
+				lintDiffProperties = append(lintDiffProperties, lintProperty)
 			}
-			lintDiffProperties = append(lintDiffProperties, lintProperty)
 		}
 	}
+	if !warningsFound {
+		// For the special case that the analyses successfully ran, but produced no warnings,
+		// explcitily set the lint diff property to the empty list.
+		return "[]", nil
+	}
 	if lintDiffProperties == nil {
-		return
+		return "", nil
 	}
 	propertyBytes, err := json.Marshal(lintDiffProperties)
-	if err == nil {
-		err = arc.setDiffProperty(diffID, lintDiffPropertyName, string(propertyBytes))
+	return string(propertyBytes), err
+}
+
+func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.AnalyzeResponse) {
+	log.Printf("The latest lint report for diff %d is %s ", diffID, lintResults)
+	diffProperty, err := generateLintDiffProperty(lintResults)
+	if err == nil && diffProperty != "" {
+		err = arc.setDiffProperty(diffID, lintDiffPropertyName, diffProperty)
 	}
 	if err != nil {
 		log.Fatal(err.Error())
