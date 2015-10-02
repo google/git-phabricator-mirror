@@ -188,10 +188,10 @@ func TestGenerateLintDiffProperty(t *testing.T) {
 		},
 	}
 
-	if prop, err := generateLintDiffProperty(noResponse); err != nil || prop != "[]" {
+	if prop, err := generateLintDiffProperty(noResponse); err != nil || prop != "" {
 		t.Errorf("Failed to convert an empty static analysis result")
 	}
-	if prop, err := generateLintDiffProperty(multipleEmptyResponses); err != nil || prop != "[]" {
+	if prop, err := generateLintDiffProperty(multipleEmptyResponses); err != nil || prop != "" {
 		t.Errorf("Failed to convert a list of empty static analysis results")
 	}
 

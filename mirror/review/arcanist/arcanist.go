@@ -498,11 +498,9 @@ func (arc Arcanist) reportUnitResults(diffID int, unitReport ci.Report) {
 }
 
 func generateLintDiffProperty(lintResults []analyses.AnalyzeResponse) (string, error) {
-	warningsFound := false
 	var lintDiffProperties []LintDiffProperty
 	for _, analyzeResponse := range lintResults {
 		for _, note := range analyzeResponse.Notes {
-			warningsFound = true
 			if note.Location != nil && note.Location.Range != nil {
 				lintProperty := LintDiffProperty{
 					Code: note.Category,
@@ -515,11 +513,6 @@ func generateLintDiffProperty(lintResults []analyses.AnalyzeResponse) (string, e
 				lintDiffProperties = append(lintDiffProperties, lintProperty)
 			}
 		}
-	}
-	if !warningsFound {
-		// For the special case that the analyses successfully ran, but produced no warnings,
-		// explcitily set the lint diff property to the empty list.
-		return "[]", nil
 	}
 	if lintDiffProperties == nil {
 		return "", nil
