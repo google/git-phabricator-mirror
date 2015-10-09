@@ -72,7 +72,7 @@ func (lintReport Report) GetLintReportResult() ([]AnalyzeResponse, error) {
 	return details.AnalyzeResponse, nil
 }
 
-// Parse parses a CI report from a git note.
+// Parse parses an analysis report from a git note.
 func Parse(note repository.Note) (Report, error) {
 	bytes := []byte(note)
 	var report Report
