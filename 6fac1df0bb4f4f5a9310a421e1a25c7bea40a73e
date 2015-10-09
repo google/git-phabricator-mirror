@@ -3,3 +3,5 @@
 {"timestamp":"1444431247","author":"ojarjur","description":"Ping"}
 
 {"timestamp":"1444431576","author":"ckerur","resolved":true}
+
+{"timestamp":"1444431576","author":"ckerur","location":{"commit":"4217c7b5642a2e8b1b3ede7b31ff7a8a0b369c59","path":"mirror/review/analyses/analyses.go","range":{"startLine":75}},"description":"Change CI report to analyses report or equivalent"}
