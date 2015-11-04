@@ -22,14 +22,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/git-appraise/repository"
-	gaReview "github.com/google/git-appraise/review"
+	"github.com/google/git-appraise/review"
 	"github.com/google/git-appraise/review/ci"
 	"github.com/google/git-appraise/review/comment"
 	"github.com/google/git-appraise/review/request"
-	"github.com/google/git-phabricator-mirror/mirror/review"
-	"github.com/google/git-phabricator-mirror/mirror/review/analyses"
-	reviewCi "github.com/google/git-phabricator-mirror/mirror/review/ci"
-	reviewComment "github.com/google/git-phabricator-mirror/mirror/review/comment"
+	review_utils "github.com/google/git-phabricator-mirror/mirror/review"
 	"log"
 	"os/exec"
 	"sort"
@@ -189,7 +186,7 @@ func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision stri
 	return filteredList
 }
 
-func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review.PhabricatorReview {
+func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review_utils.PhabricatorReview {
 	// TODO(ojarjur): Filter the query by the repo.
 	// As is, we simply return all open reviews for *any* repo, and then filter in
 	// the calling level.
@@ -198,7 +195,7 @@ func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review.PhabricatorRe
 	}
 	var response queryResponse
 	runArcCommandOrDie("differential.query", request, &response)
-	var reviews []review.PhabricatorReview
+	var reviews []review_utils.PhabricatorReview
 	for _, r := range response.Response {
 		reviews = append(reviews, r)
 	}
@@ -368,7 +365,7 @@ func (review differentialReview) buildCommentRequests(newComments []comment.Comm
 			}
 			diffID := commitToDiffMap[c.Location.Commit]
 			if diffID != "" {
-				content := reviewComment.QuoteDescription(c)
+				content := review_utils.QuoteDescription(c)
 				request := createInlineRequest{
 					RevisionID: review.ID,
 					DiffID:     diffID,
@@ -421,9 +418,9 @@ type LintDiffProperty struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments []gaReview.CommentThread) {
+func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments []review.CommentThread) {
 	existingComments := review.LoadComments()
-	newComments := reviewComment.FilterOverlapping(comments, existingComments)
+	newComments := review_utils.FilterOverlapping(comments, existingComments)
 
 	var lastCommitForLastDiff string
 	var latestDiffForReview int
@@ -437,10 +434,10 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 			latestDiffForReview = diffID
 		}
 	}
-	report := reviewCi.GetLatestCIReport(repo.GetNotes(ci.Ref, lastCommitForLastDiff))
+	report := review_utils.GetLatestCIReport(repo.GetNotes(ci.Ref, lastCommitForLastDiff))
 	arc.reportUnitResults(latestDiffForReview, report)
 
-	lintReport := analyses.GetLatestAnalysesReport(repo.GetNotes(analyses.Ref, lastCommitForLastDiff))
+	lintReport := review_utils.GetLatestAnalysesReport(repo.GetNotes(review_utils.Ref, lastCommitForLastDiff))
 	lintResults, err := lintReport.GetLintReportResult()
 	if err != nil {
 		log.Println("Failed to load the static analysis reports: " + err.Error())
@@ -498,7 +495,7 @@ func (arc Arcanist) reportUnitResults(diffID int, unitReport ci.Report) {
 	}
 }
 
-func generateLintDiffProperty(lintResults []analyses.AnalyzeResponse) (string, error) {
+func generateLintDiffProperty(lintResults []review_utils.AnalyzeResponse) (string, error) {
 	var lintDiffProperties []LintDiffProperty
 	for _, analyzeResponse := range lintResults {
 		for _, note := range analyzeResponse.Notes {
@@ -522,7 +519,7 @@ func generateLintDiffProperty(lintResults []analyses.AnalyzeResponse) (string, e
 	return string(propertyBytes), err
 }
 
-func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.AnalyzeResponse) {
+func (arc Arcanist) reportLintResults(diffID int, lintResults []review_utils.AnalyzeResponse) {
 	log.Printf("The latest lint report for diff %d is %s ", diffID, lintResults)
 	diffProperty, err := generateLintDiffProperty(lintResults)
 	if err == nil && diffProperty != "" {
@@ -537,7 +534,7 @@ func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.Analyze
 //
 // This consists of making sure the latest commit pushed to the review ref has a corresponding
 // diff in the differential review.
-func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialReview, headCommit string, req request.Request, comments []gaReview.CommentThread) {
+func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialReview, headCommit string, req request.Request, comments []review.CommentThread) {
 	if review.isClosed() {
 		return
 	}
@@ -571,7 +568,7 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 }
 
 // EnsureRequestExists runs the "arcanist" command-line tool to create a Differential diff for the given request, if one does not already exist.
-func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review gaReview.Review) {
+func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Review) {
 	revision := review.Revision
 	req := review.Request
 	comments := review.Comments

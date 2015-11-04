@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ci
+package review
 
 import (
 	"github.com/google/git-appraise/repository"
-	gaCi "github.com/google/git-appraise/review/ci"
+	"github.com/google/git-appraise/review/ci"
 	"testing"
 )
 
@@ -59,7 +59,7 @@ func TestCIReport(t *testing.T) {
 		repository.Note(testCINote2),
 	})
 
-	expected, ok := gaCi.Parse(repository.Note(testCINote2))
+	expected, ok := ci.Parse(repository.Note(testCINote2))
 	if ok != nil {
 	}
 	if latestReport != expected {
@@ -73,7 +73,7 @@ func TestCIReport(t *testing.T) {
 		repository.Note(testCINote4),
 	})
 
-	expected, ok = gaCi.Parse(repository.Note(testCINote4))
+	expected, ok = ci.Parse(repository.Note(testCINote4))
 	if ok != nil {
 	}
 	if latestReport != expected {

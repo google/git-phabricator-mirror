@@ -15,22 +15,22 @@ limitations under the License.
 */
 
 // Package comment defines the internal representation of a review comment.
-package comment
+package review
 
 import (
 	"github.com/google/git-appraise/review"
-	gaComment "github.com/google/git-appraise/review/comment"
+	"github.com/google/git-appraise/review/comment"
 	"strings"
 )
 
 // CommentMap is a map of comments indexed by their hashes.
-type CommentMap map[string]gaComment.Comment
+type CommentMap map[string]comment.Comment
 
 // QuoteDescription generates the description that quotes the given comment.
 //
 // This is for when one user (such as our mirroring bot) needs to post a comment
 // on behalf of another user.
-func QuoteDescription(comment gaComment.Comment) string {
+func QuoteDescription(comment comment.Comment) string {
 	return comment.Author + ":\n\n" + comment.Description
 }
 
@@ -40,7 +40,7 @@ func QuoteDescription(comment gaComment.Comment) string {
 // 1. The comment's author
 // 2. A separator composed of a ':' and two newlines
 // 3. The quoted comment's description.
-func isQuote(comment, other gaComment.Comment) bool {
+func isQuote(comment, other comment.Comment) bool {
 	if comment.Description == QuoteDescription(other) {
 		return true
 	}
@@ -57,7 +57,7 @@ func isQuote(comment, other gaComment.Comment) bool {
 //
 // Here, rough equivalence means that the two descriptions are the same, or that one
 // is a quote of the other posted on behalf of another user.
-func descriptionOverlaps(comment, other gaComment.Comment) bool {
+func descriptionOverlaps(comment, other comment.Comment) bool {
 	if comment.Description == other.Description {
 		return true
 	}
@@ -68,7 +68,7 @@ func descriptionOverlaps(comment, other gaComment.Comment) bool {
 }
 
 // Overlaps compares two comment locations to see if they are the same.
-func LocationOverlaps(location, other gaComment.Location) bool {
+func LocationOverlaps(location, other comment.Location) bool {
 	if location.Commit != other.Commit {
 		return false
 	}
@@ -93,7 +93,7 @@ func LocationOverlaps(location, other gaComment.Location) bool {
 // We define overlap to mean that two comments are anchored at the same location,
 // and that the two descriptions are either identical, or one is a quote of the other
 // and if their resolved bits are unset or set but with the same timestamp and have the same value
-func Overlaps(comment, other gaComment.Comment) bool {
+func Overlaps(comment, other comment.Comment) bool {
 	if !descriptionOverlaps(comment, other) {
 		return false
 	}
@@ -131,8 +131,8 @@ func (comments CommentMap) AddThreads(threads []review.CommentThread) {
 // FilterOverlapping takes a slice of comments to exclude, and then returns
 // a slice of comments, from the comment map, that do not overlap with the
 // comments to exclude.
-func (comments CommentMap) FilterOverlapping(exclude []gaComment.Comment) []gaComment.Comment {
-	var filtered []gaComment.Comment
+func (comments CommentMap) FilterOverlapping(exclude []comment.Comment) []comment.Comment {
+	var filtered []comment.Comment
 	for _, c := range comments {
 		passed := true
 		for _, e := range exclude {
@@ -147,8 +147,8 @@ func (comments CommentMap) FilterOverlapping(exclude []gaComment.Comment) []gaCo
 	return filtered
 }
 
-func FilterOverlapping(threads []review.CommentThread, exclude []gaComment.Comment) []gaComment.Comment {
-	comments := CommentMap(make(map[string]gaComment.Comment))
+func FilterOverlapping(threads []review.CommentThread, exclude []comment.Comment) []comment.Comment {
+	comments := CommentMap(make(map[string]comment.Comment))
 	comments.AddThreads(threads)
 	return comments.FilterOverlapping(exclude)
 }

@@ -19,11 +19,10 @@ package mirror
 
 import (
 	"github.com/google/git-appraise/repository"
-	gaReview "github.com/google/git-appraise/review"
-	gaComment "github.com/google/git-appraise/review/comment"
-	"github.com/google/git-phabricator-mirror/mirror/review"
-	"github.com/google/git-phabricator-mirror/mirror/review/arcanist"
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
+	"github.com/google/git-appraise/review"
+	"github.com/google/git-appraise/review/comment"
+	"github.com/google/git-phabricator-mirror/mirror/arcanist"
+	review_utils "github.com/google/git-phabricator-mirror/mirror/review"
 	"log"
 )
 
@@ -32,12 +31,12 @@ var arc = arcanist.Arcanist{}
 // processedStates is used to keep track of the state of each repository at the last time we processed it.
 // That, in turn, is used to avoid re-processing a repo if its state has not changed.
 var processedStates = make(map[string]string)
-var existingComments = make(map[string][]gaReview.CommentThread)
-var openReviews = make(map[string][]review.PhabricatorReview)
+var existingComments = make(map[string][]review.CommentThread)
+var openReviews = make(map[string][]review_utils.PhabricatorReview)
 
-func hasOverlap(newComment gaComment.Comment, existingComments []gaReview.CommentThread) bool {
+func hasOverlap(newComment comment.Comment, existingComments []review.CommentThread) bool {
 	for _, existing := range existingComments {
-		if comment.Overlaps(newComment, existing.Comment) {
+		if review_utils.Overlaps(newComment, existing.Comment) {
 			return true
 		} else if hasOverlap(newComment, existing.Children) {
 			return true
@@ -46,7 +45,7 @@ func hasOverlap(newComment gaComment.Comment, existingComments []gaReview.Commen
 	return false
 }
 
-func mirrorRepoToReview(repo repository.Repo, tool review.Tool, syncToRemote bool) {
+func mirrorRepoToReview(repo repository.Repo, tool review_utils.Tool, syncToRemote bool) {
 	if syncToRemote {
 		repo.PullNotes("origin", "refs/notes/devtools/*")
 	}
@@ -54,20 +53,20 @@ func mirrorRepoToReview(repo repository.Repo, tool review.Tool, syncToRemote boo
 	stateHash := repo.GetRepoStateHash()
 	if processedStates[repo.GetPath()] != stateHash {
 		log.Print("Mirroring repo: ", repo)
-		for _, review := range gaReview.ListAll(repo) {
-			existingComments[review.Revision] = review.Comments
-			tool.EnsureRequestExists(repo, review)
+		for _, r := range review.ListAll(repo) {
+			existingComments[r.Revision] = r.Comments
+			tool.EnsureRequestExists(repo, r)
 		}
 		openReviews[repo.GetPath()] = tool.ListOpenReviews(repo)
 		processedStates[repo.GetPath()] = stateHash
 		tool.Refresh(repo)
 	}
-	for _, review := range openReviews[repo.GetPath()] {
-		if reviewCommit := review.GetFirstCommit(repo); reviewCommit != "" {
+	for _, phabricatorReview := range openReviews[repo.GetPath()] {
+		if reviewCommit := phabricatorReview.GetFirstCommit(repo); reviewCommit != "" {
 			log.Println("Processing review: ", reviewCommit)
 			revisionComments := existingComments[reviewCommit]
 			log.Printf("Loaded %d comments for %v\n", len(revisionComments), reviewCommit)
-			for _, c := range review.LoadComments() {
+			for _, c := range phabricatorReview.LoadComments() {
 				if !hasOverlap(c, revisionComments) {
 					// The comment is new.
 					note, err := c.Write()
@@ -75,7 +74,7 @@ func mirrorRepoToReview(repo repository.Repo, tool review.Tool, syncToRemote boo
 						log.Fatal(err)
 					}
 					log.Printf("Appending a comment: %s", string(note))
-					repo.AppendNote(gaComment.Ref, reviewCommit, note)
+					repo.AppendNote(comment.Ref, reviewCommit, note)
 				} else {
 					log.Printf("Skipping '%v', as it has already been written\n", c)
 				}

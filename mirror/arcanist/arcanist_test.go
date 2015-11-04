@@ -19,7 +19,7 @@ package arcanist
 import (
 	"github.com/google/git-appraise/review/ci"
 	"github.com/google/git-appraise/review/comment"
-	"github.com/google/git-phabricator-mirror/mirror/review/analyses"
+	review_utils "github.com/google/git-phabricator-mirror/mirror/review"
 	"strings"
 	"testing"
 )
@@ -134,52 +134,52 @@ func TestGenerateUnitDiffProperty(t *testing.T) {
 }
 
 func TestGenerateLintDiffProperty(t *testing.T) {
-	noResponse := []analyses.AnalyzeResponse{}
-	multipleEmptyResponses := []analyses.AnalyzeResponse{
-		analyses.AnalyzeResponse{
-			Notes: []analyses.Note{},
+	noResponse := []review_utils.AnalyzeResponse{}
+	multipleEmptyResponses := []review_utils.AnalyzeResponse{
+		review_utils.AnalyzeResponse{
+			Notes: []review_utils.Note{},
 		},
-		analyses.AnalyzeResponse{
-			Notes: []analyses.Note{},
+		review_utils.AnalyzeResponse{
+			Notes: []review_utils.Note{},
 		},
 	}
-	testAnalyses := []analyses.AnalyzeResponse{
-		analyses.AnalyzeResponse{
-			Notes: []analyses.Note{
-				analyses.Note{
+	testreview_utils := []review_utils.AnalyzeResponse{
+		review_utils.AnalyzeResponse{
+			Notes: []review_utils.Note{
+				review_utils.Note{
 					Category:    "Test",
 					Description: "Test 1",
 				},
-				analyses.Note{
+				review_utils.Note{
 					Category:    "Test",
 					Description: "Test 2",
-					Location: &analyses.Location{
+					Location: &review_utils.Location{
 						Path: "hello.txt",
-						Range: &analyses.LocationRange{
+						Range: &review_utils.LocationRange{
 							StartLine: 42,
 						},
 					},
 				},
-				analyses.Note{
+				review_utils.Note{
 					Category:    "Test",
 					Description: "Test 3",
-					Location: &analyses.Location{
+					Location: &review_utils.Location{
 						Path: "hello.txt",
 					},
 				},
 			},
 		},
-		analyses.AnalyzeResponse{
-			Notes: []analyses.Note{},
+		review_utils.AnalyzeResponse{
+			Notes: []review_utils.Note{},
 		},
-		analyses.AnalyzeResponse{
-			Notes: []analyses.Note{
-				analyses.Note{
+		review_utils.AnalyzeResponse{
+			Notes: []review_utils.Note{
+				review_utils.Note{
 					Category:    "Test",
 					Description: "Test 4",
-					Location: &analyses.Location{
+					Location: &review_utils.Location{
 						Path: "hello.txt",
-						Range: &analyses.LocationRange{
+						Range: &review_utils.LocationRange{
 							StartLine: 1,
 						},
 					},
@@ -195,7 +195,7 @@ func TestGenerateLintDiffProperty(t *testing.T) {
 		t.Errorf("Failed to convert a list of empty static analysis results")
 	}
 
-	prop, err := generateLintDiffProperty(testAnalyses)
+	prop, err := generateLintDiffProperty(testreview_utils)
 	if err != nil {
 		t.Errorf("Failed to convert the non-trivial analysis results")
 	}

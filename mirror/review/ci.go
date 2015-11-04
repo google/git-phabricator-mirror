@@ -1,18 +1,18 @@
-package ci
+package review
 
 import (
 	"github.com/google/git-appraise/repository"
-	gaCi "github.com/google/git-appraise/review/ci"
+	"github.com/google/git-appraise/review/ci"
 	"log"
 	"sort"
 	"strconv"
 )
 
-func GetLatestCIReport(notes []repository.Note) gaCi.Report {
-	timestampReportMap := make(map[int]gaCi.Report)
+func GetLatestCIReport(notes []repository.Note) ci.Report {
+	timestampReportMap := make(map[int]ci.Report)
 	var timestamps []int
 
-	validCIReports := gaCi.ParseAllValid(notes)
+	validCIReports := ci.ParseAllValid(notes)
 	for _, report := range validCIReports {
 		timestamp, err := strconv.Atoi(report.Timestamp)
 		if err != nil {
@@ -22,7 +22,7 @@ func GetLatestCIReport(notes []repository.Note) gaCi.Report {
 		timestampReportMap[timestamp] = report
 	}
 	if len(timestamps) == 0 {
-		return gaCi.Report{}
+		return ci.Report{}
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(timestamps)))
 	return timestampReportMap[timestamps[0]]

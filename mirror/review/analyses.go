@@ -1,4 +1,4 @@
-package analyses
+package review
 
 import (
 	"encoding/json"

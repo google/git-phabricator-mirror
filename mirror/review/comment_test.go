@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package comment
+package review
 
 import (
 	"fmt"
-	gaComment "github.com/google/git-appraise/review/comment"
+	"github.com/google/git-appraise/review/comment"
 	"testing"
 )
 
@@ -27,30 +27,30 @@ func TestOverlaps(t *testing.T) {
 
 With some text in it.`
 
-	location := gaComment.Location{
+	location := comment.Location{
 		Commit: "ABCDEFG",
 		Path:   "hello.txt",
-		Range: &gaComment.Range{
+		Range: &comment.Range{
 			StartLine: 42,
 		},
 	}
-	comment := gaComment.Comment{
+	originalComment := comment.Comment{
 		Timestamp:   "012345",
 		Author:      "foo@bar.com",
 		Location:    &location,
 		Description: description,
 	}
-	quotedComment := gaComment.Comment{
+	quotedComment := comment.Comment{
 		Timestamp:   "456789",
 		Author:      "bot@robots-r-us.com",
 		Location:    &location,
-		Description: QuoteDescription(comment),
+		Description: QuoteDescription(originalComment),
 	}
-	if !Overlaps(comment, quotedComment) {
-		t.Errorf("%v and %v do not overlap", comment, quotedComment)
+	if !Overlaps(originalComment, quotedComment) {
+		t.Errorf("%v and %v do not overlap", originalComment, quotedComment)
 	}
-	if !Overlaps(quotedComment, comment) {
-		t.Errorf("%v and %v do not overlap", quotedComment, comment)
+	if !Overlaps(quotedComment, originalComment) {
+		t.Errorf("%v and %v do not overlap", quotedComment, originalComment)
 	}
 
 }
@@ -59,13 +59,13 @@ func TestResolvedOverlaps(t *testing.T) {
 	reject := false
 	accept := true
 
-	blankComment := gaComment.Comment{
+	blankComment := comment.Comment{
 		Timestamp: "012345",
 		Author:    "bar@foo.com",
 		Resolved:  &reject,
 	}
 
-	blankComment2 := gaComment.Comment{
+	blankComment2 := comment.Comment{
 		Timestamp: "012345",
 		Author:    "bar@foo.com",
 		Resolved:  &accept,
@@ -114,26 +114,26 @@ func TestFilterOverlapping(t *testing.T) {
 	description := `Some comment description
 
 With some text in it.`
-	location := gaComment.Location{
+	location := comment.Location{
 		Commit: "ABCDEFG",
 		Path:   "hello.txt",
-		Range: &gaComment.Range{
+		Range: &comment.Range{
 			StartLine: 42,
 		},
 	}
-	comment := gaComment.Comment{
+	originalComment := comment.Comment{
 		Timestamp:   "012345",
 		Author:      "foo@bar.com",
 		Location:    &location,
 		Description: description,
 	}
-	quotedComment := gaComment.Comment{
+	quotedComment := comment.Comment{
 		Timestamp:   "456789",
 		Author:      "bot@robots-r-us.com",
 		Location:    &location,
-		Description: QuoteDescription(comment),
+		Description: QuoteDescription(originalComment),
 	}
-	replyComment := gaComment.Comment{
+	replyComment := comment.Comment{
 		Timestamp:   "456789",
 		Author:      "bot@robots-r-us.com",
 		Location:    &location,
@@ -141,17 +141,17 @@ With some text in it.`
 	}
 
 	commentMap := make(CommentMap)
-	addComment := func(c gaComment.Comment) {
+	addComment := func(c comment.Comment) {
 		hash, err := c.Hash()
 		if err != nil {
 			t.Errorf("Failure while hashing a comment: %v", err)
 		}
 		commentMap[hash] = c
 	}
-	addComment(comment)
+	addComment(originalComment)
 	addComment(quotedComment)
 	addComment(replyComment)
-	existingComments := []gaComment.Comment{comment}
+	existingComments := []comment.Comment{originalComment}
 
 	filteredComments := commentMap.FilterOverlapping(existingComments)
 	if len(filteredComments) != 1 {
