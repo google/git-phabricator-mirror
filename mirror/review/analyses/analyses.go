@@ -2,7 +2,7 @@ package analyses
 
 import (
 	"encoding/json"
-	"github.com/google/git-phabricator-mirror/mirror/repository"
+	"github.com/google/git-appraise/repository"
 	"io/ioutil"
 	"log"
 	"net/http"

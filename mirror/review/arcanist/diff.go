@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/git-phabricator-mirror/mirror/repository"
-	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	"github.com/google/git-appraise/repository"
+	"github.com/google/git-appraise/review/request"
 	"log"
 	"sort"
 	"strconv"
@@ -112,15 +112,14 @@ func (diff *queryDiffItem) findLastCommit() string {
 
 // getDiffChanges takes two revisions from which to generate a "git diff", and returns a
 // slice of "changes" objects that represent that diff as parsed by Phabricator.
-func (arc Arcanist) getDiffChanges(repo repository.Repo, from, to repository.Revision) ([]interface{}, error) {
+func (arc Arcanist) getDiffChanges(repo repository.Repo, from, to string) ([]interface{}, error) {
 	// TODO(ojarjur): This is a big hack, but so far there does not seem to be a better solution:
 	// We need to pass a list of "changes" JSON objects that contain the parsed diff contents.
 	// The simplest way to do that parsing seems to be to create a rawDiff and have Phabricator
 	// parse it on the server side. We then read back that diff, and return the changes from it.
-	rawDiff, err := repo.GetRawDiff(from, to)
-	if err != nil {
-		return nil, err
-	}
+	rawDiff := repo.Diff(from, to, "-M", "--no-ext-diff", "--no-textconv",
+		"--src-prefix=a/", "--dst-prefix=b/",
+		fmt.Sprintf("-U%d", 0x7fff), "--no-color")
 	createRequest := differentialCreateRawDiffRequest{Diff: rawDiff}
 	var createResponse differentialCreateRawDiffResponse
 	runArcCommandOrDie("differential.createrawdiff", createRequest, &createResponse)
@@ -187,15 +186,34 @@ func (arc Arcanist) setDiffProperty(diffID int, name, value string) error {
 	return nil
 }
 
+// CommitDetails represents the Differential metadata for a specific commit.
+type CommitDetails struct {
+	Commit      string   `json:"commit,omitempty"`
+	Author      string   `json:"author,omitempty"`
+	AuthorEmail string   `json:"authorEmail,omitempty"`
+	Tree        string   `json:"tree,omitempty"`
+	Time        string   `json:"time,omitempty"`
+	Parents     []string `json:"parents,omitempty"`
+	Summary     string   `json:"summary,omitempty"`
+}
+
 // createDifferentialDiff generates a Phabricator resource that represents a diff between two revisions.
 //
 // The generated resource includes metadata about how the diff was generated, and a JSON representation
 // of the changes from the diff, as parsed by Phabricator.
-func (arc Arcanist) createDifferentialDiff(repo repository.Repo, mergeBase, revision repository.Revision, req request.Request, priorDiffs []string) (*differentialDiff, error) {
-	revisionDetails, err := repo.GetDetails(revision)
+func (arc Arcanist) createDifferentialDiff(repo repository.Repo, mergeBase, revision string, req request.Request, priorDiffs []string) (*differentialDiff, error) {
+	repoCommitDetails, err := repo.GetCommitDetails(revision)
 	if err != nil {
 		return nil, err
 	}
+	var revisionDetails CommitDetails
+	revisionDetails.Commit = revision
+	revisionDetails.Author = repoCommitDetails.Author
+	revisionDetails.AuthorEmail = repoCommitDetails.AuthorEmail
+	revisionDetails.Tree = repoCommitDetails.Tree
+	revisionDetails.Time = repoCommitDetails.Time
+	revisionDetails.Parents = repoCommitDetails.Parents
+	revisionDetails.Summary = repoCommitDetails.Summary
 	changes, err := arc.getDiffChanges(repo, mergeBase, revision)
 	if err != nil {
 		return nil, err
@@ -238,7 +256,7 @@ func (arc Arcanist) createDifferentialDiff(repo repository.Repo, mergeBase, revi
 			}
 		}
 	}
-	localCommits[string(revision)] = *revisionDetails
+	localCommits[string(revision)] = revisionDetails
 	localCommitsProperty, err := json.Marshal(localCommits)
 	if err != nil {
 		return nil, err

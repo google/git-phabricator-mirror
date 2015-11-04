@@ -29,7 +29,7 @@ package arcanist
 import (
 	"bytes"
 	"fmt"
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
+	"github.com/google/git-appraise/review/comment"
 	"log"
 	"os/exec"
 	"strconv"
@@ -267,12 +267,12 @@ func LoadComments(review differentialReview, readTransactions ReadTransactions, 
 				log.Fatal(err)
 			}
 			if transactionComment.FileName != "" {
-				c.Location = &comment.CommentLocation{
+				c.Location = &comment.Location{
 					Commit: transactionComment.Commit,
 					Path:   transactionComment.FileName,
 				}
 				if transactionComment.LineNumber != 0 {
-					c.Location.Range = &comment.CommentRange{
+					c.Location.Range = &comment.Range{
 						StartLine: transactionComment.LineNumber,
 					}
 				}

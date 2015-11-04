@@ -18,29 +18,29 @@ limitations under the License.
 package review
 
 import (
-	"github.com/google/git-phabricator-mirror/mirror/repository"
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
-	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	"github.com/google/git-appraise/repository"
+	"github.com/google/git-appraise/review"
+	"github.com/google/git-appraise/review/comment"
 )
 
-// Review represents a review tool's concept of a code review.
-type Review interface {
+// PhabricatorReview represents a code review stored in Phabricator.
+type PhabricatorReview interface {
 	// LoadComments returns the comments for a review
 	LoadComments() []comment.Comment
 
 	// GetFirstCommit returns the first commit that is included in the review
-	GetFirstCommit(repo repository.Repo) *repository.Revision
+	GetFirstCommit(repo repository.Repo) string
 }
 
-// Tool represents a code review tool.
+// Tool represents our interface to the code review portion of Phabricator.
 //
-// For example, this can be used to wrap Phabricator's "arcanist" command-line tool.
+// The default implementation wraps calls to Phabricator's "arcanist" command-line tool.
 type Tool interface {
-	// EnsureRequestExists creates a code review for the given request, if one does not already exist.
-	EnsureRequestExists(repo repository.Repo, revision repository.Revision, req request.Request, comments map[string]comment.Comment)
+	// EnsureRequestExists mirrors a review from git-notes into Phabricator.
+	EnsureRequestExists(repo repository.Repo, review review.Review)
 
 	// ListOpenReviews returns the list of reviews that the tool knows about that have not yet been closed.
-	ListOpenReviews(repo repository.Repo) []Review
+	ListOpenReviews(repo repository.Repo) []PhabricatorReview
 
 	// Refresh advises the review tool that the code being reviewed has changed, and to reload it.
 	Refresh(repo repository.Repo)

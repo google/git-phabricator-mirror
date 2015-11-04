@@ -17,9 +17,9 @@ limitations under the License.
 package arcanist
 
 import (
+	"github.com/google/git-appraise/review/ci"
+	"github.com/google/git-appraise/review/comment"
 	"github.com/google/git-phabricator-mirror/mirror/review/analyses"
-	"github.com/google/git-phabricator-mirror/mirror/review/ci"
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"strings"
 	"testing"
 )
@@ -43,7 +43,7 @@ func TestGenerateCommentRequests(t *testing.T) {
 		comment.Comment{
 			Timestamp: "01234",
 			Author:    "example@example.com",
-			Location: &comment.CommentLocation{
+			Location: &comment.Location{
 				Commit: "ABCD",
 				Path:   "hello.txt",
 			},
@@ -53,10 +53,10 @@ func TestGenerateCommentRequests(t *testing.T) {
 		comment.Comment{
 			Timestamp: "01234",
 			Author:    "example@example.com",
-			Location: &comment.CommentLocation{
+			Location: &comment.Location{
 				Commit: "EFGH",
 				Path:   "hello.txt",
-				Range: &comment.CommentRange{
+				Range: &comment.Range{
 					StartLine: 42,
 				},
 			},

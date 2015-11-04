@@ -21,12 +21,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/google/git-phabricator-mirror/mirror/repository"
+	"github.com/google/git-appraise/repository"
+	gaReview "github.com/google/git-appraise/review"
+	"github.com/google/git-appraise/review/ci"
+	"github.com/google/git-appraise/review/comment"
+	"github.com/google/git-appraise/review/request"
 	"github.com/google/git-phabricator-mirror/mirror/review"
 	"github.com/google/git-phabricator-mirror/mirror/review/analyses"
-	"github.com/google/git-phabricator-mirror/mirror/review/ci"
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
-	"github.com/google/git-phabricator-mirror/mirror/review/request"
+	reviewCi "github.com/google/git-phabricator-mirror/mirror/review/ci"
+	reviewComment "github.com/google/git-phabricator-mirror/mirror/review/comment"
 	"log"
 	"os/exec"
 	"sort"
@@ -68,7 +71,7 @@ type Arcanist struct {
 }
 
 // Filter processing of previously closed revisions.
-var closedRevisionsMap = make(map[repository.Revision]bool)
+var closedRevisionsMap = make(map[string]bool)
 
 // runArcCommandOrDie runs the given Conduit API call using the "arc" command line tool.
 //
@@ -125,7 +128,7 @@ type differentialReview struct {
 }
 
 // GetFirstCommit returns the first commit that is included in the review
-func (review differentialReview) GetFirstCommit(repo repository.Repo) *repository.Revision {
+func (review differentialReview) GetFirstCommit(repo repository.Repo) string {
 	var commits []string
 	for _, hashPair := range review.Hashes {
 		// We only care about the hashes for commits, which have exactly two
@@ -137,22 +140,20 @@ func (review differentialReview) GetFirstCommit(repo repository.Repo) *repositor
 	var commitTimestamps []int
 	commitsByTimestamp := make(map[int]string)
 	for _, commit := range commits {
-		details, err := repo.GetDetails(repository.Revision(commit))
+		timeString := repo.GetCommitTime(commit)
+		timestamp, err := strconv.Atoi(timeString)
 		if err == nil {
-			timestamp, err := strconv.Atoi(details.Time)
-			if err == nil {
-				commitTimestamps = append(commitTimestamps, timestamp)
-				// If there are multiple, equally old commits, then the last one wins.
-				commitsByTimestamp[timestamp] = commit
-			}
+			commitTimestamps = append(commitTimestamps, timestamp)
+			// If there are multiple, equally old commits, then the last one wins.
+			commitsByTimestamp[timestamp] = commit
 		}
 	}
 	if len(commitTimestamps) == 0 {
-		return nil
+		return ""
 	}
 	sort.Ints(commitTimestamps)
-	revision := repository.Revision(commitsByTimestamp[commitTimestamps[0]])
-	return &revision
+	revision := commitsByTimestamp[commitTimestamps[0]]
+	return revision
 }
 
 // queryRequest specifies filters for review queries. Specifically, CommitHashes filters
@@ -169,9 +170,9 @@ type queryResponse struct {
 	Response     []differentialReview `json:"response,omitempty"`
 }
 
-func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision repository.Revision) []differentialReview {
+func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision string) []differentialReview {
 	request := queryRequest{
-		CommitHashes: [][]string{[]string{commitHashType, string(revision)}},
+		CommitHashes: [][]string{[]string{commitHashType, revision}},
 	}
 	var response queryResponse
 	runArcCommandOrDie("differential.query", request, &response)
@@ -188,7 +189,7 @@ func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision repo
 	return filteredList
 }
 
-func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review.Review {
+func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review.PhabricatorReview {
 	// TODO(ojarjur): Filter the query by the repo.
 	// As is, we simply return all open reviews for *any* repo, and then filter in
 	// the calling level.
@@ -197,7 +198,7 @@ func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review.Review {
 	}
 	var response queryResponse
 	runArcCommandOrDie("differential.query", request, &response)
-	var reviews []review.Review
+	var reviews []review.PhabricatorReview
 	for _, r := range response.Response {
 		reviews = append(reviews, r)
 	}
@@ -230,7 +231,7 @@ type createRevisionResponse struct {
 	Response     differentialRevision `json:"response,omitempty"`
 }
 
-func (arc Arcanist) createDifferentialRevision(repo repository.Repo, revision repository.Revision, diffID int, req request.Request) (*differentialRevision, error) {
+func (arc Arcanist) createDifferentialRevision(repo repository.Repo, revision string, diffID int, req request.Request) (*differentialRevision, error) {
 	// If the description is multiple lines, then treat the first as the title.
 	fields := revisionFields{Title: strings.Split(req.Description, "\n")[0]}
 	// Truncate the title if it is too long.
@@ -367,7 +368,7 @@ func (review differentialReview) buildCommentRequests(newComments []comment.Comm
 			}
 			diffID := commitToDiffMap[c.Location.Commit]
 			if diffID != "" {
-				content := c.QuoteDescription()
+				content := reviewComment.QuoteDescription(c)
 				request := createInlineRequest{
 					RevisionID: review.ID,
 					DiffID:     diffID,
@@ -420,9 +421,9 @@ type LintDiffProperty struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments comment.CommentMap) {
+func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments []gaReview.CommentThread) {
 	existingComments := review.LoadComments()
-	newComments := comments.FilterOverlapping(existingComments)
+	newComments := reviewComment.FilterOverlapping(comments, existingComments)
 
 	var lastCommitForLastDiff string
 	var latestDiffForReview int
@@ -436,10 +437,10 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differ
 			latestDiffForReview = diffID
 		}
 	}
-	report := ci.GetLatestCIReport(repo.GetNotes(ci.Ref, repository.Revision(lastCommitForLastDiff)))
+	report := reviewCi.GetLatestCIReport(repo.GetNotes(ci.Ref, lastCommitForLastDiff))
 	arc.reportUnitResults(latestDiffForReview, report)
 
-	lintReport := analyses.GetLatestAnalysesReport(repo.GetNotes(analyses.Ref, repository.Revision(lastCommitForLastDiff)))
+	lintReport := analyses.GetLatestAnalysesReport(repo.GetNotes(analyses.Ref, lastCommitForLastDiff))
 	lintResults, err := lintReport.GetLintReportResult()
 	if err != nil {
 		log.Println("Failed to load the static analysis reports: " + err.Error())
@@ -536,18 +537,13 @@ func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.Analyze
 //
 // This consists of making sure the latest commit pushed to the review ref has a corresponding
 // diff in the differential review.
-func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialReview, headCommit string, req request.Request, comments map[string]comment.Comment) {
+func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialReview, headCommit string, req request.Request, comments []gaReview.CommentThread) {
 	if review.isClosed() {
 		return
 	}
 
-	headRevision := repository.Revision(headCommit)
-	mergeBase, err := repo.GetMergeBase(repository.Revision(req.TargetRef), headRevision)
-	if err != nil {
-		// This can happen if the target ref has been deleted while we were performing the updates.
-		return
-	}
-
+	headRevision := headCommit
+	mergeBase := repo.MergeBase(req.TargetRef, headRevision)
 	for _, hashPair := range review.Hashes {
 		if len(hashPair) == 2 && hashPair[0] == commitHashType && hashPair[1] == headCommit {
 			// The review already has the hash of the HEAD commit, so we have nothing to do beyond mirroring comments
@@ -575,24 +571,17 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 }
 
 // EnsureRequestExists runs the "arcanist" command-line tool to create a Differential diff for the given request, if one does not already exist.
-func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repository.Revision, req request.Request, comments map[string]comment.Comment) {
+func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review gaReview.Review) {
+	revision := review.Revision
+	req := review.Request
+	comments := review.Comments
 
 	// If this revision has been previously closed shortcut all processing
 	if closedRevisionsMap[revision] {
 		return
 	}
-
-	mergeBase, err := repo.GetMergeBase(repository.Revision(req.TargetRef), revision)
-	if err != nil {
-		// There are lots of reasons that we might not be able to compute a merge base,
-		// (e.g. the revision already being merged in, or being dropped and garbage collected),
-		// but they all indicate that the review request is no longer valid.
-		log.Printf("Ignoring review request '%v', because we could not compute a merge base", req)
-		return
-	}
-
 	existingReviews := arc.listDifferentialReviewsOrDie(req.ReviewRef, revision)
-	if mergeBase == revision {
+	if review.Submitted {
 		// The change has already been merged in, so we should simply close any open reviews.
 		for _, review := range existingReviews {
 			if !review.isClosed() {
@@ -603,7 +592,16 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repositor
 		return
 	}
 
-	headDetails, err := repo.GetDetails(repository.Revision(req.ReviewRef))
+	base, err := review.GetBaseCommit()
+	if err != nil {
+		// There are lots of reasons that we might not be able to compute a base commit,
+		// (e.g. the revision already being merged in, or being dropped and garbage collected),
+		// but they all indicate that the review request is no longer valid.
+		log.Printf("Ignoring review request '%v', because we could not compute a base commit", req)
+		return
+	}
+
+	head, err := review.GetHeadCommit()
 	if err != nil {
 		// The given review ref has been deleted (or never existed), but the change wasn't merged.
 		// TODO(ojarjur): We should mark the existing reviews as abandoned.
@@ -614,12 +612,12 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repositor
 	if len(existingReviews) > 0 {
 		// The change is still pending, but we already have existing reviews, so we should just update those.
 		for _, review := range existingReviews {
-			arc.updateReviewDiffs(repo, review, headDetails.Commit, req, comments)
+			arc.updateReviewDiffs(repo, review, head, req, comments)
 		}
 		return
 	}
 
-	diff, err := arc.createDifferentialDiff(repo, mergeBase, revision, req, []string{})
+	diff, err := arc.createDifferentialDiff(repo, base, revision, req, []string{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -637,7 +635,7 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, revision repositor
 	// we need to ensure that at least the first and last ones are added.
 	existingReviews = arc.listDifferentialReviewsOrDie(req.ReviewRef, revision)
 	for _, review := range existingReviews {
-		arc.updateReviewDiffs(repo, review, headDetails.Commit, req, comments)
+		arc.updateReviewDiffs(repo, review, head, req, comments)
 	}
 }
 

@@ -18,8 +18,8 @@ package main
 
 import (
 	"flag"
+	"github.com/google/git-appraise/repository"
 	"github.com/google/git-phabricator-mirror/mirror"
-	"github.com/google/git-phabricator-mirror/mirror/repository"
 	"log"
 	"os"
 	"path/filepath"
@@ -39,12 +39,9 @@ func findRepos(searchDir string) ([]repository.Repo, error) {
 			return err
 		}
 		if info.IsDir() {
-			isRepo, err := repository.IsGitRepo(path)
-			if err != nil {
-				return err
-			}
-			if isRepo {
-				repos = append(repos, repository.GitRepo{path})
+			gitRepo, err := repository.NewGitRepo(path)
+			if err == nil {
+				repos = append(repos, gitRepo)
 				// Since we have found a git repo, we don't need to
 				// traverse any of its child directories.
 				return filepath.SkipDir

@@ -17,7 +17,7 @@ limitations under the License.
 package arcanist
 
 import (
-	"github.com/google/git-phabricator-mirror/mirror/review/comment"
+	"github.com/google/git-appraise/review/comment"
 	"testing"
 )
 
