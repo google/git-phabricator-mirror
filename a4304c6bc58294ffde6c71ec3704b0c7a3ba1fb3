@@ -1,0 +1,1 @@
+{"timestamp":"1446856590","reviewRef":"refs/heads/ojarjur/remove-duplicate-code","targetRef":"refs/heads/master","requester":"ojarjur@google.com","reviewers":["ckerur@google.com"],"description":"Removed code that was duplicative of the logic in the git-appraise libraries, and switched to call those instead","baseCommit":"55f935843f130b3d8be8b404c0ea7a1d1624d5f5"}
