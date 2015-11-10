@@ -7,3 +7,5 @@
 {"timestamp":"1447120105","author":"ckerur","location":{"commit":"32f9f9b6c6dcac34452b44d7774fc68c4fba9034","path":"mirror/mirror.go","range":{"startLine":36}},"description":"Is the getExistingComments method not useful anymore ?"}
 
 {"timestamp":"1447120105","author":"ckerur","location":{"commit":"32f9f9b6c6dcac34452b44d7774fc68c4fba9034","path":"mirror/arcanist/diff.go","range":{"startLine":122}},"description":"What is this printing ?"}
+
+{"timestamp":"1447120105","author":"ckerur","location":{"commit":"32f9f9b6c6dcac34452b44d7774fc68c4fba9034","path":"git-phabricator-mirror/git-phabricator-mirror.go","range":{"startLine":42}},"description":"So what happens if there is an err now ?\nIs it eaten or something else happens ?"}
