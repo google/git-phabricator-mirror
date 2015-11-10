@@ -1,1 +1,3 @@
 {"timestamp":"1447120105","author":"ckerur","description":"In general I am a little confused with the consolidation... It seems some code like ci.go have moved to git-appraise and we are just overwriting bits that are different .\n\nWhen reading this code in the future, are we to look at git-appraise as sort of the parent and then the mirror code ? Why do we have a file like comment.go... What is an example difference between what is in git-appraise and the code we are adding here ?"}
+
+{"timestamp":"1447120105","author":"ckerur","location":{"commit":"32f9f9b6c6dcac34452b44d7774fc68c4fba9034","path":"mirror/review/comment.go","range":{"startLine":6}},"description":"Is this file added or moved from somewhere ?\nI seem to recollect seeing similar code before ..."}
