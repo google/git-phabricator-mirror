@@ -146,13 +146,22 @@ With some text in it.`
 		Description: description,
 		Resolved:    &resolved,
 	}
+	quotedReject := comment.Comment{
+		Timestamp: "456789",
+		Author:    "bot@robots-r-us.com",
+		Location: &comment.Location{
+			Commit: "ABCDEFG",
+		},
+		Description: QuoteDescription(originalReject),
+		Resolved:    &resolved,
+	}
 	misQuotedReject := comment.Comment{
 		Timestamp: "456789",
 		Author:    "bot@robots-r-us.com",
 		Location: &comment.Location{
 			Commit: "ABCDEFG",
 		},
-		Description: QuoteDescription(originalComment),
+		Description: QuoteDescription(originalReject),
 		Resolved:    nil,
 	}
 
@@ -175,6 +184,10 @@ With some text in it.`
 		},
 		review.CommentThread{
 			Hash:    "4",
+			Comment: quotedReject,
+		},
+		review.CommentThread{
+			Hash:    "5",
 			Comment: misQuotedReject,
 		},
 	}
