@@ -23,9 +23,6 @@ import (
 	"strings"
 )
 
-// CommentMap is a map of comments indexed by their hashes.
-type CommentMap map[string]comment.Comment
-
 // QuoteDescription generates the description that quotes the given comment.
 //
 // This is for when one user (such as our mirroring bot) needs to post a comment
@@ -121,34 +118,19 @@ func Overlaps(comment, other comment.Comment) bool {
 	return false
 }
 
-func (comments CommentMap) AddThreads(threads []review.CommentThread) {
+func FilterOverlapping(threads []review.CommentThread, exclude []comment.Comment) []comment.Comment {
+	var includedComments []comment.Comment
 	for _, thread := range threads {
-		comments[thread.Hash] = thread.Comment
-		comments.AddThreads(thread.Children)
-	}
-}
-
-// FilterOverlapping takes a slice of comments to exclude, and then returns
-// a slice of comments, from the comment map, that do not overlap with the
-// comments to exclude.
-func (comments CommentMap) FilterOverlapping(exclude []comment.Comment) []comment.Comment {
-	var filtered []comment.Comment
-	for _, c := range comments {
-		passed := true
+		includedComments = append(includedComments, FilterOverlapping(thread.Children, exclude)...)
+		include := true
 		for _, e := range exclude {
-			if Overlaps(e, c) {
-				passed = false
+			if Overlaps(e, thread.Comment) {
+				include = false
 			}
 		}
-		if passed {
-			filtered = append(filtered, c)
+		if include {
+			includedComments = append(includedComments, thread.Comment)
 		}
 	}
-	return filtered
-}
-
-func FilterOverlapping(threads []review.CommentThread, exclude []comment.Comment) []comment.Comment {
-	comments := CommentMap(make(map[string]comment.Comment))
-	comments.AddThreads(threads)
-	return comments.FilterOverlapping(exclude)
+	return includedComments
 }

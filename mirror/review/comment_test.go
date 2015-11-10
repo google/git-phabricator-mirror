@@ -18,6 +18,7 @@ package review
 
 import (
 	"fmt"
+	"github.com/google/git-appraise/review"
 	"github.com/google/git-appraise/review/comment"
 	"testing"
 )
@@ -140,20 +141,23 @@ With some text in it.`
 		Description: fmt.Sprintf("'%s': Actually, I disagree", description),
 	}
 
-	commentMap := make(CommentMap)
-	addComment := func(c comment.Comment) {
-		hash, err := c.Hash()
-		if err != nil {
-			t.Errorf("Failure while hashing a comment: %v", err)
-		}
-		commentMap[hash] = c
+	commentThreads := []review.CommentThread{
+		review.CommentThread{
+			Hash:    "0",
+			Comment: originalComment,
+		},
+		review.CommentThread{
+			Hash:    "1",
+			Comment: quotedComment,
+		},
+		review.CommentThread{
+			Hash:    "2",
+			Comment: replyComment,
+		},
 	}
-	addComment(originalComment)
-	addComment(quotedComment)
-	addComment(replyComment)
 	existingComments := []comment.Comment{originalComment}
 
-	filteredComments := commentMap.FilterOverlapping(existingComments)
+	filteredComments := FilterOverlapping(commentThreads, existingComments)
 	if len(filteredComments) != 1 {
 		t.Errorf("Unexpected number of filtered results: %v", filteredComments)
 	}
