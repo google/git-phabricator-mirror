@@ -84,12 +84,6 @@ func TestResolvedOverlaps(t *testing.T) {
 		t.Errorf("%v and %v  do not overlap", blankComment, blankComment2)
 	}
 
-	blankComment2.Timestamp = "56789"
-	// should not overlap because resolved bits are set for both and the same but timestamps are different
-	if Overlaps(blankComment, blankComment2) {
-		t.Errorf("%v and %v  overlap", blankComment, blankComment2)
-	}
-
 	blankComment2.Resolved = &accept
 	// should not overlap because resolved bits are set for both and the timestamps are different
 	if Overlaps(blankComment, blankComment2) {
@@ -122,23 +116,44 @@ With some text in it.`
 			StartLine: 42,
 		},
 	}
+	resolved := false
 	originalComment := comment.Comment{
 		Timestamp:   "012345",
 		Author:      "foo@bar.com",
 		Location:    &location,
 		Description: description,
+		Resolved:    &resolved,
 	}
 	quotedComment := comment.Comment{
 		Timestamp:   "456789",
 		Author:      "bot@robots-r-us.com",
 		Location:    &location,
 		Description: QuoteDescription(originalComment),
+		Resolved:    nil,
 	}
 	replyComment := comment.Comment{
 		Timestamp:   "456789",
 		Author:      "bot@robots-r-us.com",
 		Location:    &location,
 		Description: fmt.Sprintf("'%s': Actually, I disagree", description),
+	}
+	originalReject := comment.Comment{
+		Timestamp: "012345",
+		Author:    "foo@bar.com",
+		Location: &comment.Location{
+			Commit: "ABCDEFG",
+		},
+		Description: description,
+		Resolved:    &resolved,
+	}
+	misQuotedReject := comment.Comment{
+		Timestamp: "456789",
+		Author:    "bot@robots-r-us.com",
+		Location: &comment.Location{
+			Commit: "ABCDEFG",
+		},
+		Description: QuoteDescription(originalComment),
+		Resolved:    nil,
 	}
 
 	commentThreads := []review.CommentThread{
@@ -154,14 +169,25 @@ With some text in it.`
 			Hash:    "2",
 			Comment: replyComment,
 		},
+		review.CommentThread{
+			Hash:    "3",
+			Comment: originalReject,
+		},
+		review.CommentThread{
+			Hash:    "4",
+			Comment: misQuotedReject,
+		},
 	}
-	existingComments := []comment.Comment{originalComment}
+	existingComments := []comment.Comment{originalComment, originalReject}
 
 	filteredComments := FilterOverlapping(commentThreads, existingComments)
-	if len(filteredComments) != 1 {
+	if len(filteredComments) != 2 {
 		t.Errorf("Unexpected number of filtered results: %v", filteredComments)
 	}
 	if filteredComments[0] != replyComment {
+		t.Errorf("Unexpected filtered comment result: %v", filteredComments[0])
+	}
+	if filteredComments[1] != misQuotedReject {
 		t.Errorf("Unexpected filtered comment result: %v", filteredComments[0])
 	}
 }

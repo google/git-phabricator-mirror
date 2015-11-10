@@ -82,6 +82,21 @@ func LocationOverlaps(location, other comment.Location) bool {
 	return location.Range.StartLine == other.Range.StartLine
 }
 
+// resolvedOverlaps determines if the two provided comments have the same resolved value
+func resolvedOverlaps(comment, other comment.Comment) bool {
+	if (comment.Resolved != nil && other.Resolved == nil) ||
+		(comment.Resolved == nil && other.Resolved != nil) {
+		return false
+	}
+
+	if comment.Resolved != nil && other.Resolved != nil {
+		if *comment.Resolved != *other.Resolved {
+			return false
+		}
+	}
+	return true
+}
+
 // Overlaps compares two comments to see if they are roughly the same.
 //
 // This is necessary because the internal data models used by Phabricator and
@@ -89,30 +104,23 @@ func LocationOverlaps(location, other comment.Location) bool {
 //
 // We define overlap to mean that two comments are anchored at the same location,
 // and that the two descriptions are either identical, or one is a quote of the other
-// and if their resolved bits are unset or set but with the same timestamp and have the same value
+// and (if they are top-level comments), if their resolved bits are unset or set but
+// with the same value.
 func Overlaps(comment, other comment.Comment) bool {
 	if !descriptionOverlaps(comment, other) {
 		return false
 	}
-	if (comment.Resolved != nil && other.Resolved == nil) ||
-		(comment.Resolved == nil && other.Resolved != nil) {
-		return false
-	}
-
-	if comment.Resolved != nil && other.Resolved != nil {
-		if (*comment.Resolved != *other.Resolved) ||
-			(comment.Timestamp != other.Timestamp) {
-			return false
-		}
-	}
 
 	if comment.Location == nil && other.Location == nil {
-		return true
+		return resolvedOverlaps(comment, other)
 	}
 	if comment.Location == nil || other.Location == nil {
 		return false
 	}
 	if LocationOverlaps(*comment.Location, *other.Location) {
+		if comment.Location.Path == "" {
+			return resolvedOverlaps(comment, other)
+		}
 		return true
 	}
 	return false
