@@ -386,8 +386,7 @@ func (differentialReview DifferentialReview) buildCommentRequestsForThread(exist
 	return requests
 }
 
-func (differentialReview DifferentialReview) buildCommentRequests(commentThreads []review.CommentThread, commitToDiffMap map[string]string) ([]createInlineRequest, []createCommentRequest) {
-	existingComments := differentialReview.LoadComments()
+func (differentialReview DifferentialReview) buildCommentRequests(commentThreads []review.CommentThread, existingComments []comment.Comment, commitToDiffMap map[string]string) ([]createInlineRequest, []createCommentRequest) {
 	var inlineRequests []createInlineRequest
 	var commentRequests []createCommentRequest
 
@@ -482,7 +481,8 @@ func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, differentialR
 	}
 	arc.mirrorStatusesForEachCommit(r, commitToDiffIDMap)
 
-	inlineRequests, commentRequests := differentialReview.buildCommentRequests(r.Comments, commitToDiffMap)
+	existingComments := differentialReview.LoadComments()
+	inlineRequests, commentRequests := differentialReview.buildCommentRequests(r.Comments, existingComments, commitToDiffMap)
 	for _, request := range inlineRequests {
 		var response createInlineResponse
 		runArcCommandOrDie("differential.createinline", request, &response)

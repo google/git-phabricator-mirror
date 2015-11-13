@@ -71,7 +71,7 @@ func TestGenerateCommentRequests(t *testing.T) {
 			},
 		},
 	}
-	inlineRequests, commentRequests := diffReview.buildCommentRequests(comments, commitToDiffMap)
+	inlineRequests, commentRequests := diffReview.buildCommentRequests(comments, nil, commitToDiffMap)
 	if inlineRequests == nil || commentRequests == nil {
 		t.Errorf("Failed to build the comment requests: %v, %v", inlineRequests, commentRequests)
 	}
