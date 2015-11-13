@@ -21,3 +21,5 @@
 {"timestamp":"1447379634","author":"ojarjur","location":{"commit":"f61b264c1a53aebcdcda449f379b314fada7e7e0","path":"git-phabricator-mirror/git-phabricator-mirror.go","range":{"startLine":42}},"description":"If there is an error here, then that means the directory being searched is not a git repo, so the search should continue down that directory's subdirectories."}
 
 {"timestamp":"1447442817","author":"ckerur","resolved":true}
+
+{"timestamp":"1447442817","author":"ckerur","description":"Let's keep in mind if we have to make more changes, whether going to a separate library makes sense ..."}
