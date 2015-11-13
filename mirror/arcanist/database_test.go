@@ -80,7 +80,7 @@ Hash is made equal to id for understanding purposes
 */
 func TestLoadComments(t *testing.T) {
 	revisionID := "testReview"
-	review := differentialReview{ID: revisionID}
+	review := DifferentialReview{ID: revisionID}
 
 	expectedComments := SetupExpectedComments()
 	actualComments := LoadComments(review, MockReadTransactions, MockReadTransactionComment, MockLookupUser)

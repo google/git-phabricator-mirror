@@ -230,12 +230,12 @@ func readDatabaseTransactionComment(transactionID string) (*differentialDatabase
 	return &comment, nil
 }
 
-// LoadComments takes in a differentialReview and returns the associated comments.
-func (review differentialReview) LoadComments() []comment.Comment {
+// LoadComments takes in a DifferentialReview and returns the associated comments.
+func (review DifferentialReview) LoadComments() []comment.Comment {
 	return LoadComments(review, readDatabaseTransactions, readDatabaseTransactionComment, lookupUser)
 }
 
-func LoadComments(review differentialReview, readTransactions ReadTransactions, readTransactionComment ReadTransactionComment, lookupUser UserLookup) []comment.Comment {
+func LoadComments(review DifferentialReview, readTransactions ReadTransactions, readTransactionComment ReadTransactionComment, lookupUser UserLookup) []comment.Comment {
 
 	allTransactions, err := readTransactions(review.PHID)
 	if err != nil {

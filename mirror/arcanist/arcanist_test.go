@@ -17,54 +17,61 @@ limitations under the License.
 package arcanist
 
 import (
+	"github.com/google/git-appraise/review"
+	"github.com/google/git-appraise/review/analyses"
 	"github.com/google/git-appraise/review/ci"
 	"github.com/google/git-appraise/review/comment"
-	review_utils "github.com/google/git-phabricator-mirror/mirror/review"
 	"strings"
 	"testing"
 )
 
 func TestGenerateCommentRequests(t *testing.T) {
 	revisionID := "testReview"
-	review := differentialReview{ID: revisionID}
+	diffReview := DifferentialReview{ID: revisionID}
 
 	commitToDiffMap := map[string]string{
 		"ABCD": "1",
 		"EFGH": "2",
 	}
-	comments := []comment.Comment{
-		comment.Comment{
-			Timestamp:   "01234",
-			Author:      "example@example.com",
-			Location:    nil,
-			Description: "A review comment",
-			Resolved:    nil,
-		},
-		comment.Comment{
-			Timestamp: "01234",
-			Author:    "example@example.com",
-			Location: &comment.Location{
-				Commit: "ABCD",
-				Path:   "hello.txt",
+	comments := []review.CommentThread{
+		review.CommentThread{
+			Comment: comment.Comment{
+				Timestamp:   "01234",
+				Author:      "example@example.com",
+				Location:    nil,
+				Description: "A review comment",
+				Resolved:    nil,
 			},
-			Description: "A file comment",
-			Resolved:    nil,
 		},
-		comment.Comment{
-			Timestamp: "01234",
-			Author:    "example@example.com",
-			Location: &comment.Location{
-				Commit: "EFGH",
-				Path:   "hello.txt",
-				Range: &comment.Range{
-					StartLine: 42,
+		review.CommentThread{
+			Comment: comment.Comment{
+				Timestamp: "01234",
+				Author:    "example@example.com",
+				Location: &comment.Location{
+					Commit: "ABCD",
+					Path:   "hello.txt",
 				},
+				Description: "A file comment",
+				Resolved:    nil,
 			},
-			Description: "A line comment",
-			Resolved:    nil,
+		},
+		review.CommentThread{
+			Comment: comment.Comment{
+				Timestamp: "01234",
+				Author:    "example@example.com",
+				Location: &comment.Location{
+					Commit: "EFGH",
+					Path:   "hello.txt",
+					Range: &comment.Range{
+						StartLine: 42,
+					},
+				},
+				Description: "A line comment",
+				Resolved:    nil,
+			},
 		},
 	}
-	inlineRequests, commentRequests := review.buildCommentRequests(comments, commitToDiffMap)
+	inlineRequests, commentRequests := diffReview.buildCommentRequests(comments, commitToDiffMap)
 	if inlineRequests == nil || commentRequests == nil {
 		t.Errorf("Failed to build the comment requests: %v, %v", inlineRequests, commentRequests)
 	}
@@ -134,52 +141,52 @@ func TestGenerateUnitDiffProperty(t *testing.T) {
 }
 
 func TestGenerateLintDiffProperty(t *testing.T) {
-	noResponse := []review_utils.AnalyzeResponse{}
-	multipleEmptyResponses := []review_utils.AnalyzeResponse{
-		review_utils.AnalyzeResponse{
-			Notes: []review_utils.Note{},
+	noResponse := []analyses.AnalyzeResponse{}
+	multipleEmptyResponses := []analyses.AnalyzeResponse{
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{},
 		},
-		review_utils.AnalyzeResponse{
-			Notes: []review_utils.Note{},
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{},
 		},
 	}
-	testreview_utils := []review_utils.AnalyzeResponse{
-		review_utils.AnalyzeResponse{
-			Notes: []review_utils.Note{
-				review_utils.Note{
+	testreview_utils := []analyses.AnalyzeResponse{
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{
+				analyses.Note{
 					Category:    "Test",
 					Description: "Test 1",
 				},
-				review_utils.Note{
+				analyses.Note{
 					Category:    "Test",
 					Description: "Test 2",
-					Location: &review_utils.Location{
+					Location: &analyses.Location{
 						Path: "hello.txt",
-						Range: &review_utils.LocationRange{
+						Range: &analyses.LocationRange{
 							StartLine: 42,
 						},
 					},
 				},
-				review_utils.Note{
+				analyses.Note{
 					Category:    "Test",
 					Description: "Test 3",
-					Location: &review_utils.Location{
+					Location: &analyses.Location{
 						Path: "hello.txt",
 					},
 				},
 			},
 		},
-		review_utils.AnalyzeResponse{
-			Notes: []review_utils.Note{},
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{},
 		},
-		review_utils.AnalyzeResponse{
-			Notes: []review_utils.Note{
-				review_utils.Note{
+		analyses.AnalyzeResponse{
+			Notes: []analyses.Note{
+				analyses.Note{
 					Category:    "Test",
 					Description: "Test 4",
-					Location: &review_utils.Location{
+					Location: &analyses.Location{
 						Path: "hello.txt",
-						Range: &review_utils.LocationRange{
+						Range: &analyses.LocationRange{
 							StartLine: 1,
 						},
 					},

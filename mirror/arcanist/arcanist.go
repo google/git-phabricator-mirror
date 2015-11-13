@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"github.com/google/git-appraise/repository"
 	"github.com/google/git-appraise/review"
+	"github.com/google/git-appraise/review/analyses"
 	"github.com/google/git-appraise/review/ci"
 	"github.com/google/git-appraise/review/comment"
 	"github.com/google/git-appraise/review/request"
@@ -111,7 +112,7 @@ func abbreviateRefName(ref string) string {
 	return ref
 }
 
-type differentialReview struct {
+type DifferentialReview struct {
 	ID         string     `json:"id,omitempty"`
 	PHID       string     `json:"phid,omitempty"`
 	Title      string     `json:"title,omitempty"`
@@ -125,9 +126,9 @@ type differentialReview struct {
 }
 
 // GetFirstCommit returns the first commit that is included in the review
-func (review differentialReview) GetFirstCommit(repo repository.Repo) string {
+func (r DifferentialReview) GetFirstCommit(repo repository.Repo) string {
 	var commits []string
-	for _, hashPair := range review.Hashes {
+	for _, hashPair := range r.Hashes {
 		// We only care about the hashes for commits, which have exactly two
 		// elements, the first of which is "gtcm".
 		if len(hashPair) == 2 && hashPair[0] == commitHashType {
@@ -137,12 +138,14 @@ func (review differentialReview) GetFirstCommit(repo repository.Repo) string {
 	var commitTimestamps []int
 	commitsByTimestamp := make(map[int]string)
 	for _, commit := range commits {
-		timeString := repo.GetCommitTime(commit)
-		timestamp, err := strconv.Atoi(timeString)
-		if err == nil {
-			commitTimestamps = append(commitTimestamps, timestamp)
-			// If there are multiple, equally old commits, then the last one wins.
-			commitsByTimestamp[timestamp] = commit
+		if _, err := repo.GetLastParent(commit); err == nil {
+			timeString := repo.GetCommitTime(commit)
+			timestamp, err := strconv.Atoi(timeString)
+			if err == nil {
+				commitTimestamps = append(commitTimestamps, timestamp)
+				// If there are multiple, equally old commits, then the last one wins.
+				commitsByTimestamp[timestamp] = commit
+			}
 		}
 	}
 	if len(commitTimestamps) == 0 {
@@ -164,23 +167,23 @@ type queryRequest struct {
 type queryResponse struct {
 	Error        string               `json:"error,omitempty"`
 	ErrorMessage string               `json:"errorMessage,omitempty"`
-	Response     []differentialReview `json:"response,omitempty"`
+	Response     []DifferentialReview `json:"response,omitempty"`
 }
 
-func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision string) []differentialReview {
+func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision string) []DifferentialReview {
 	request := queryRequest{
 		CommitHashes: [][]string{[]string{commitHashType, revision}},
 	}
 	var response queryResponse
 	runArcCommandOrDie("differential.query", request, &response)
 
-	var filteredList []differentialReview
-	for _, review := range response.Response {
+	var filteredList []DifferentialReview
+	for _, differentialReview := range response.Response {
 		// Phabricator has a branch field for limiting query results, but it seems to
 		// handle that field incorrectly, and returns no results if it is specified.
 		// As such, we simple query for all results, and filter them on the client side.
-		if review.Branch == reviewRef || review.Branch == abbreviateRefName(reviewRef) {
-			filteredList = append(filteredList, review)
+		if differentialReview.Branch == reviewRef || differentialReview.Branch == abbreviateRefName(reviewRef) {
+			filteredList = append(filteredList, differentialReview)
 		}
 	}
 	return filteredList
@@ -278,8 +281,8 @@ type differentialUpdateRevisionResponse struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
-func (review differentialReview) isClosed() bool {
-	return review.Status == differentialClosedStatus || review.Status == differentialAbandonedStatus
+func (differentialReview DifferentialReview) isClosed() bool {
+	return differentialReview.Status == differentialClosedStatus || differentialReview.Status == differentialAbandonedStatus
 }
 
 type differentialCloseRequest struct {
@@ -291,8 +294,8 @@ type differentialCloseResponse struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
-func (review differentialReview) close() {
-	reviewID, err := strconv.Atoi(review.ID)
+func (differentialReview DifferentialReview) close() {
+	reviewID, err := strconv.Atoi(differentialReview.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -352,37 +355,58 @@ type createCommentResponse struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
-func (review differentialReview) buildCommentRequests(newComments []comment.Comment, commitToDiffMap map[string]string) ([]createInlineRequest, []createCommentRequest) {
+func overlapsAny(c comment.Comment, existingComments []comment.Comment) bool {
+	for _, existing := range existingComments {
+		if review_utils.Overlaps(c, existing) {
+			return true
+		}
+	}
+	return false
+}
+
+func (differentialReview DifferentialReview) buildCommentRequestsForThread(existingComments []comment.Comment, commentThread review.CommentThread, diffID, path string, lineNumber uint32) []createInlineRequest {
+	var requests []createInlineRequest
+	if !overlapsAny(commentThread.Comment, existingComments) {
+		content := review_utils.QuoteDescription(commentThread.Comment)
+		request := createInlineRequest{
+			RevisionID: differentialReview.ID,
+			DiffID:     diffID,
+			FilePath:   path,
+			LineNumber: lineNumber,
+			// IsNewFile indicates if the comment is on the left-hand side (0) or the right-hand side (1).
+			// We always post comments to the right-hand side.
+			IsNewFile: 1,
+			Content:   content,
+		}
+		requests = append(requests, request)
+	}
+	for _, child := range commentThread.Children {
+		requests = append(requests, differentialReview.buildCommentRequestsForThread(existingComments, child, diffID, path, lineNumber)...)
+	}
+	return requests
+}
+
+func (differentialReview DifferentialReview) buildCommentRequests(commentThreads []review.CommentThread, commitToDiffMap map[string]string) ([]createInlineRequest, []createCommentRequest) {
+	existingComments := differentialReview.LoadComments()
 	var inlineRequests []createInlineRequest
 	var commentRequests []createCommentRequest
 
-	for _, c := range newComments {
-		if c.Location != nil && c.Location.Path != "" {
+	for _, c := range commentThreads {
+		if c.Comment.Location != nil && c.Comment.Location.Path != "" {
 			// TODO(ojarjur): Also mirror whole-review comments.
 			var lineNumber uint32 = 1
-			if c.Location.Range != nil {
-				lineNumber = c.Location.Range.StartLine
+			if c.Comment.Location.Range != nil {
+				lineNumber = c.Comment.Location.Range.StartLine
 			}
-			diffID := commitToDiffMap[c.Location.Commit]
+			diffID := commitToDiffMap[c.Comment.Location.Commit]
 			if diffID != "" {
-				content := review_utils.QuoteDescription(c)
-				request := createInlineRequest{
-					RevisionID: review.ID,
-					DiffID:     diffID,
-					FilePath:   c.Location.Path,
-					LineNumber: lineNumber,
-					// IsNewFile indicates if the comment is on the left-hand side (0) or the right-hand side (1).
-					// We always post comments to the right-hand side.
-					IsNewFile: 1,
-					Content:   content,
-				}
-				inlineRequests = append(inlineRequests, request)
+				inlineRequests = append(inlineRequests, differentialReview.buildCommentRequestsForThread(existingComments, c, diffID, c.Comment.Location.Path, lineNumber)...)
 			}
 		}
 	}
 	if len(inlineRequests) > 0 {
 		request := createCommentRequest{
-			RevisionID:    review.ID,
+			RevisionID:    differentialReview.ID,
 			Action:        "comment",
 			AttachInlines: true,
 		}
@@ -418,34 +442,47 @@ type LintDiffProperty struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, review differentialReview, comments []review.CommentThread) {
-	existingComments := review.LoadComments()
-	newComments := review_utils.FilterOverlapping(comments, existingComments)
+func (arc Arcanist) mirrorStatusesForEachCommit(r review.Review, commitToDiffIDMap map[string]int) {
+	for commitHash, diffID := range commitToDiffIDMap {
+		ciNotes := r.Repo.GetNotes(ci.Ref, commitHash)
+		ciReports := ci.ParseAllValid(ciNotes)
+		latestCIReport, err := ci.GetLatestCIReport(ciReports)
+		if err != nil {
+			log.Println("Failed to load the continuous integration reports: " + err.Error())
+		} else {
+			arc.reportUnitResults(diffID, *latestCIReport)
+		}
 
-	var lastCommitForLastDiff string
-	var latestDiffForReview int
+		analysesNotes := r.Repo.GetNotes(analyses.Ref, commitHash)
+		analysesReports := analyses.ParseAllValid(analysesNotes)
+		latestAnalysesReport, err := analyses.GetLatestAnalysesReport(analysesReports)
+		if err != nil {
+			log.Println("Failed to load the static analysis reports: " + err.Error())
+		} else {
+			lintResults, err := latestAnalysesReport.GetLintReportResult()
+			if err != nil {
+				log.Println("Failed to load the static analysis reports: " + err.Error())
+			} else {
+				arc.reportLintResults(diffID, lintResults)
+			}
+		}
+	}
+}
+
+func (arc Arcanist) mirrorCommentsIntoReview(repo repository.Repo, differentialReview DifferentialReview, r review.Review) {
 	commitToDiffMap := make(map[string]string)
-	for _, diffIDString := range review.Diffs {
+	commitToDiffIDMap := make(map[string]int)
+	for _, diffIDString := range differentialReview.Diffs {
 		lastCommit := findCommitForDiff(diffIDString)
 		commitToDiffMap[lastCommit] = diffIDString
 		diffID, err := strconv.Atoi(diffIDString)
-		if err == nil && diffID > latestDiffForReview {
-			lastCommitForLastDiff = lastCommit
-			latestDiffForReview = diffID
+		if err == nil {
+			commitToDiffIDMap[lastCommit] = diffID
 		}
 	}
-	report := review_utils.GetLatestCIReport(repo.GetNotes(ci.Ref, lastCommitForLastDiff))
-	arc.reportUnitResults(latestDiffForReview, report)
+	arc.mirrorStatusesForEachCommit(r, commitToDiffIDMap)
 
-	lintReport := review_utils.GetLatestAnalysesReport(repo.GetNotes(review_utils.Ref, lastCommitForLastDiff))
-	lintResults, err := lintReport.GetLintReportResult()
-	if err != nil {
-		log.Println("Failed to load the static analysis reports: " + err.Error())
-	} else {
-		arc.reportLintResults(latestDiffForReview, lintResults)
-	}
-
-	inlineRequests, commentRequests := review.buildCommentRequests(newComments, commitToDiffMap)
+	inlineRequests, commentRequests := differentialReview.buildCommentRequests(r.Comments, commitToDiffMap)
 	for _, request := range inlineRequests {
 		var response createInlineResponse
 		runArcCommandOrDie("differential.createinline", request, &response)
@@ -495,7 +532,7 @@ func (arc Arcanist) reportUnitResults(diffID int, unitReport ci.Report) {
 	}
 }
 
-func generateLintDiffProperty(lintResults []review_utils.AnalyzeResponse) (string, error) {
+func generateLintDiffProperty(lintResults []analyses.AnalyzeResponse) (string, error) {
 	var lintDiffProperties []LintDiffProperty
 	for _, analyzeResponse := range lintResults {
 		for _, note := range analyzeResponse.Notes {
@@ -519,7 +556,7 @@ func generateLintDiffProperty(lintResults []review_utils.AnalyzeResponse) (strin
 	return string(propertyBytes), err
 }
 
-func (arc Arcanist) reportLintResults(diffID int, lintResults []review_utils.AnalyzeResponse) {
+func (arc Arcanist) reportLintResults(diffID int, lintResults []analyses.AnalyzeResponse) {
 	log.Printf("The latest lint report for diff %d is %s ", diffID, lintResults)
 	diffProperty, err := generateLintDiffProperty(lintResults)
 	if err == nil && diffProperty != "" {
@@ -534,23 +571,23 @@ func (arc Arcanist) reportLintResults(diffID int, lintResults []review_utils.Ana
 //
 // This consists of making sure the latest commit pushed to the review ref has a corresponding
 // diff in the differential review.
-func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialReview, headCommit string, req request.Request, comments []review.CommentThread) {
-	if review.isClosed() {
+func (arc Arcanist) updateReviewDiffs(repo repository.Repo, differentialReview DifferentialReview, headCommit string, req request.Request, r review.Review) {
+	if differentialReview.isClosed() {
 		return
 	}
 
 	headRevision := headCommit
 	mergeBase := repo.MergeBase(req.TargetRef, headRevision)
-	for _, hashPair := range review.Hashes {
+	for _, hashPair := range differentialReview.Hashes {
 		if len(hashPair) == 2 && hashPair[0] == commitHashType && hashPair[1] == headCommit {
 			// The review already has the hash of the HEAD commit, so we have nothing to do beyond mirroring comments
 			// and build status if applicable
-			arc.mirrorCommentsIntoReview(repo, review, comments)
+			arc.mirrorCommentsIntoReview(repo, differentialReview, r)
 			return
 		}
 	}
 
-	diff, err := arc.createDifferentialDiff(repo, mergeBase, headRevision, req, review.Diffs)
+	diff, err := arc.createDifferentialDiff(repo, mergeBase, headRevision, req, differentialReview.Diffs)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -559,7 +596,7 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 		return
 	}
 
-	updateRequest := differentialUpdateRevisionRequest{ID: review.ID, DiffID: strconv.Itoa(diff.ID)}
+	updateRequest := differentialUpdateRevisionRequest{ID: differentialReview.ID, DiffID: strconv.Itoa(diff.ID)}
 	var updateResponse differentialUpdateRevisionResponse
 	runArcCommandOrDie("differential.updaterevision", updateRequest, &updateResponse)
 	if updateResponse.Error != "" {
@@ -571,7 +608,6 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, review differentialR
 func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Review) {
 	revision := review.Revision
 	req := review.Request
-	comments := review.Comments
 
 	// If this revision has been previously closed shortcut all processing
 	if closedRevisionsMap[revision] {
@@ -580,9 +616,9 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Revi
 	existingReviews := arc.listDifferentialReviewsOrDie(req.ReviewRef, revision)
 	if review.Submitted {
 		// The change has already been merged in, so we should simply close any open reviews.
-		for _, review := range existingReviews {
-			if !review.isClosed() {
-				review.close()
+		for _, differentialReview := range existingReviews {
+			if !differentialReview.isClosed() {
+				differentialReview.close()
 			}
 		}
 		closedRevisionsMap[revision] = true
@@ -608,8 +644,8 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Revi
 
 	if len(existingReviews) > 0 {
 		// The change is still pending, but we already have existing reviews, so we should just update those.
-		for _, review := range existingReviews {
-			arc.updateReviewDiffs(repo, review, head, req, comments)
+		for _, existing := range existingReviews {
+			arc.updateReviewDiffs(repo, existing, head, req, review)
 		}
 		return
 	}
@@ -631,8 +667,8 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Revi
 	// If the review already contains multiple commits by the time we mirror it, then
 	// we need to ensure that at least the first and last ones are added.
 	existingReviews = arc.listDifferentialReviewsOrDie(req.ReviewRef, revision)
-	for _, review := range existingReviews {
-		arc.updateReviewDiffs(repo, review, head, req, comments)
+	for _, existing := range existingReviews {
+		arc.updateReviewDiffs(repo, existing, head, req, review)
 	}
 }
 
