@@ -17,3 +17,5 @@
 {"timestamp":"1447379634","author":"ojarjur","location":{"commit":"f61b264c1a53aebcdcda449f379b314fada7e7e0","path":"mirror/mirror.go","range":{"startLine":50}},"description":"It does not return any errors. It can encounter errors, but not any that we know how to recover from. As such, it just treats them all as fatal."}
 
 {"timestamp":"1447379634","author":"ojarjur","location":{"commit":"f61b264c1a53aebcdcda449f379b314fada7e7e0","path":"mirror/mirror.go","range":{"startLine":36}},"description":"No, it's not useful anymore, as this is now using the review package from git-appraise, and a review.Review instance already includes all of the existing comments."}
+
+{"timestamp":"1447379634","author":"ojarjur","location":{"commit":"f61b264c1a53aebcdcda449f379b314fada7e7e0","path":"git-phabricator-mirror/git-phabricator-mirror.go","range":{"startLine":42}},"description":"If there is an error here, then that means the directory being searched is not a git repo, so the search should continue down that directory's subdirectories."}
