@@ -457,7 +457,7 @@ func (arc Arcanist) mirrorStatusesForEachCommit(r review.Review, commitToDiffIDM
 		latestAnalysesReport, err := analyses.GetLatestAnalysesReport(analysesReports)
 		if err != nil {
 			log.Println("Failed to load the static analysis reports: " + err.Error())
-		} else {
+		} else if latestAnalysesReport != nil {
 			lintResults, err := latestAnalysesReport.GetLintReportResult()
 			if err != nil {
 				log.Println("Failed to load the static analysis reports: " + err.Error())
