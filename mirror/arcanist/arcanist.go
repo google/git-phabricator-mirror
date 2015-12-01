@@ -448,7 +448,7 @@ func (arc Arcanist) mirrorStatusesForEachCommit(r review.Review, commitToDiffIDM
 		latestCIReport, err := ci.GetLatestCIReport(ciReports)
 		if err != nil {
 			log.Println("Failed to load the continuous integration reports: " + err.Error())
-		} else {
+		} else if latestCIReport != nil {
 			arc.reportUnitResults(diffID, *latestCIReport)
 		}
 
