@@ -1,0 +1,1 @@
+{"timestamp":"1448998185","reviewRef":"refs/heads/ojarjur/fix-nil-dereference","targetRef":"refs/heads/master","requester":"ojarjur@google.com","reviewers":["ckerur@google.com"],"description":"Fixed a nil pointer dereference that occurred if there were no unit results for a commit","baseCommit":"935ee00aa98894508a8fd8ae95e0d63114ae4c8e"}
