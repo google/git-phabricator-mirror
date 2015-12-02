@@ -170,23 +170,13 @@ type queryResponse struct {
 	Response     []DifferentialReview `json:"response,omitempty"`
 }
 
-func (arc Arcanist) listDifferentialReviewsOrDie(reviewRef string, revision string) []DifferentialReview {
+func (arc Arcanist) listDifferentialReviewsOrDie(revision string) []DifferentialReview {
 	request := queryRequest{
 		CommitHashes: [][]string{[]string{commitHashType, revision}},
 	}
 	var response queryResponse
 	runArcCommandOrDie("differential.query", request, &response)
-
-	var filteredList []DifferentialReview
-	for _, differentialReview := range response.Response {
-		// Phabricator has a branch field for limiting query results, but it seems to
-		// handle that field incorrectly, and returns no results if it is specified.
-		// As such, we simple query for all results, and filter them on the client side.
-		if differentialReview.Branch == reviewRef || differentialReview.Branch == abbreviateRefName(reviewRef) {
-			filteredList = append(filteredList, differentialReview)
-		}
-	}
-	return filteredList
+	return response.Response
 }
 
 func (arc Arcanist) ListOpenReviews(repo repository.Repo) []review_utils.PhabricatorReview {
@@ -613,7 +603,7 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Revi
 	if closedRevisionsMap[revision] {
 		return
 	}
-	existingReviews := arc.listDifferentialReviewsOrDie(req.ReviewRef, revision)
+	existingReviews := arc.listDifferentialReviewsOrDie(revision)
 	if review.Submitted {
 		// The change has already been merged in, so we should simply close any open reviews.
 		for _, differentialReview := range existingReviews {
@@ -666,7 +656,7 @@ func (arc Arcanist) EnsureRequestExists(repo repository.Repo, review review.Revi
 
 	// If the review already contains multiple commits by the time we mirror it, then
 	// we need to ensure that at least the first and last ones are added.
-	existingReviews = arc.listDifferentialReviewsOrDie(req.ReviewRef, revision)
+	existingReviews = arc.listDifferentialReviewsOrDie(revision)
 	for _, existing := range existingReviews {
 		arc.updateReviewDiffs(repo, existing, head, req, review)
 	}
