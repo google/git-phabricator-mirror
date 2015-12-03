@@ -50,7 +50,10 @@ func mirrorRepoToReview(repo repository.Repo, tool review_utils.Tool, syncToRemo
 		repo.PullNotes("origin", "refs/notes/devtools/*")
 	}
 
-	stateHash := repo.GetRepoStateHash()
+	stateHash, err := repo.GetRepoStateHash()
+	if err != nil {
+		log.Fatal(err)
+	}
 	if processedStates[repo.GetPath()] != stateHash {
 		log.Print("Mirroring repo: ", repo)
 		for _, r := range review.ListAll(repo) {

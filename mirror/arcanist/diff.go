@@ -117,9 +117,12 @@ func (arc Arcanist) getDiffChanges(repo repository.Repo, from, to string) ([]int
 	// We need to pass a list of "changes" JSON objects that contain the parsed diff contents.
 	// The simplest way to do that parsing seems to be to create a rawDiff and have Phabricator
 	// parse it on the server side. We then read back that diff, and return the changes from it.
-	rawDiff := repo.Diff(from, to, "-M", "--no-ext-diff", "--no-textconv",
+	rawDiff, err := repo.Diff(from, to, "-M", "--no-ext-diff", "--no-textconv",
 		"--src-prefix=a/", "--dst-prefix=b/",
 		fmt.Sprintf("-U%d", 0x7fff), "--no-color")
+	if err != nil {
+		return nil, err
+	}
 	createRequest := differentialCreateRawDiffRequest{Diff: rawDiff}
 	var createResponse differentialCreateRawDiffResponse
 	runArcCommandOrDie("differential.createrawdiff", createRequest, &createResponse)

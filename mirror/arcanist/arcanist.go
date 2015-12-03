@@ -139,9 +139,9 @@ func (r DifferentialReview) GetFirstCommit(repo repository.Repo) string {
 	commitsByTimestamp := make(map[int]string)
 	for _, commit := range commits {
 		if _, err := repo.GetLastParent(commit); err == nil {
-			timeString := repo.GetCommitTime(commit)
-			timestamp, err := strconv.Atoi(timeString)
-			if err == nil {
+			timeString, err1 := repo.GetCommitTime(commit)
+			timestamp, err2 := strconv.Atoi(timeString)
+			if err1 == nil && err2 == nil {
 				commitTimestamps = append(commitTimestamps, timestamp)
 				// If there are multiple, equally old commits, then the last one wins.
 				commitsByTimestamp[timestamp] = commit
@@ -567,7 +567,10 @@ func (arc Arcanist) updateReviewDiffs(repo repository.Repo, differentialReview D
 	}
 
 	headRevision := headCommit
-	mergeBase := repo.MergeBase(req.TargetRef, headRevision)
+	mergeBase, err := repo.MergeBase(req.TargetRef, headRevision)
+	if err != nil {
+		log.Fatal(err)
+	}
 	for _, hashPair := range differentialReview.Hashes {
 		if len(hashPair) == 2 && hashPair[0] == commitHashType && hashPair[1] == headCommit {
 			// The review already has the hash of the HEAD commit, so we have nothing to do beyond mirroring comments
