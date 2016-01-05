@@ -63,7 +63,10 @@ func mirrorRepoToReview(repo repository.Repo, tool review_utils.Tool, syncToRemo
 			}
 			log.Println("Mirroring review: ", reviewJson)
 			existingComments[r.Revision] = r.Comments
-			tool.EnsureRequestExists(repo, r)
+			reviewDetails, err := r.Details()
+			if err == nil {
+				tool.EnsureRequestExists(repo, *reviewDetails)
+			}
 		}
 		openReviews[repo.GetPath()] = tool.ListOpenReviews(repo)
 		processedStates[repo.GetPath()] = stateHash
