@@ -57,7 +57,7 @@ func mirrorRepoToReview(repo repository.Repo, tool review_utils.Tool, syncToRemo
 	if processedStates[repo.GetPath()] != stateHash {
 		log.Print("Mirroring repo: ", repo)
 		for _, r := range review.ListAll(repo) {
-			reviewJson, err := r.GetJson()
+			reviewJson, err := r.GetJSON()
 			if err != nil {
 				log.Fatal(err)
 			}
