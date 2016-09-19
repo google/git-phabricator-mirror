@@ -72,9 +72,17 @@ func mirrorRepoToReview(repo repository.Repo, tool review_utils.Tool, syncToRemo
 		processedStates[repo.GetPath()] = stateHash
 		tool.Refresh(repo)
 	}
+ReviewLoop:
 	for _, phabricatorReview := range openReviews[repo.GetPath()] {
 		if reviewCommit := phabricatorReview.GetFirstCommit(repo); reviewCommit != "" {
 			log.Println("Processing review: ", reviewCommit)
+			r, err := review.GetSummary(repo, reviewCommit)
+			if err != nil {
+				log.Fatal(err)
+			} else if r == nil {
+				log.Printf("Skipping unknown review %q", reviewCommit)
+				continue ReviewLoop
+			}
 			revisionComments := existingComments[reviewCommit]
 			log.Printf("Loaded %d comments for %v\n", len(revisionComments), reviewCommit)
 			for _, c := range phabricatorReview.LoadComments() {
